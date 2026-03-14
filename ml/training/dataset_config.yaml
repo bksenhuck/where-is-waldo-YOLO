@@ -1,0 +1,6 @@
+path: E:\projects\folder-where-is-waldo-yolo\where-is-waldo-YOLO\data
+train: images/train
+val: images/val
+names:
+- waldo
+nc: 1

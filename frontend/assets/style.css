@@ -1,0 +1,85 @@
+/* ── Global reset ─────────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  background-color: #272b30;
+  color: #aab3bc;
+}
+
+/* ── Dash Graph — remove white flash ─────────────────────────── */
+.js-plotly-plot .plotly .main-svg {
+  background: transparent !important;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────── */
+.btn-primary {
+  background-color: #5bc0de;
+  color: #1a1d20;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+  letter-spacing: 0.4px;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #46b8da;
+}
+
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: #5cb85c;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+  letter-spacing: 0.4px;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #4cae4c;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ── Radio items ──────────────────────────────────────────────── */
+.radio-group label {
+  color: #aab3bc !important;
+  font-size: 14px;
+}
+
+/* ── Result panel animation ───────────────────────────────────── */
+.result-panel {
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #272b30; }
+::-webkit-scrollbar-thumb { background: #484e55; border-radius: 3px; }

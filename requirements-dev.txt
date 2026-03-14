@@ -1,0 +1,11 @@
+# ── Dev environment (local machine with GPU) ──────────────────────────────────
+# Install: pip install -r requirements-dev.txt
+-r requirements.txt
+
+# Background removal — GPU (NVIDIA/CUDA)
+rembg[gpu]>=2.0.50
+
+# Notebook / exploration
+jupyter>=1.0.0
+ipykernel>=6.0.0
+matplotlib>=3.8.0

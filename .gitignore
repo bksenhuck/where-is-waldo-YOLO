@@ -1,0 +1,58 @@
+# Python
+.env
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv*/
+.venv/
+env/
+venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Jupyter
+.ipynb_checkpoints/
+
+# ML / YOLO artifacts — tracked in GCS, not git
+*.pt
+*.onnx
+*.pkl
+*.joblib
+runs/
+yolo_results/
+
+# SQLite
+*.db
+*.db-wal
+*.db-shm
+
+# Generated data (images & labels produced by generate_dataset.py)
+data/images/
+data/labels/
+
+# Model weights and trained artifacts (tracked in GCS)
+data/models/
+
+# Raw assets (downloaded / generated — restore from GCS)
+frontend/assets/backgrounds/
+frontend/assets/characters/
+frontend/assets/waldo/
+
+# GCS service-account credentials
+service-account*.json
+*-key.json
+
+# Logs
+*.log
+logs/

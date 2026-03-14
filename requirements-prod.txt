@@ -1,0 +1,7 @@
+# ── Production environment (Cloud Run — CPU only) ─────────────────────────────
+# Install: pip install -r requirements-prod.txt
+# Dockerfile uses this file.
+-r requirements.txt
+
+# Background removal — CPU (no GPU on Cloud Run)
+rembg[cpu]>=2.0.50
