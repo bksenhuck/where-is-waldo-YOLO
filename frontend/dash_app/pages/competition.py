@@ -78,70 +78,68 @@ def layout(lang: str = "pt") -> html.Div:
                     # ── Game area (shown after competition starts) ────────────
                     html.Div(
                         [
-                            # Placeholder shown while scene is being generated
+                            # 80 % — graph area
                             html.Div(
-                                # 80 % — graph area
-                                html.Div(
-                                    [
-                                        html.Div(
-                                            id="comp-graph-placeholder",
-                                            children=[
-                                                html.Div(
-                                                    t(s, "comp.placeholder.title"),
-                                                    style={
-                                                        "fontSize": "18px",
-                                                        "fontWeight": "600",
-                                                        "color": _T["text"],
-                                                        "marginBottom": "10px",
-                                                    },
-                                                ),
-                                            ],
-                                            style={
-                                                "height": "640px",
-                                                "display": "flex",
-                                                "flexDirection": "column",
-                                                "alignItems": "center",
-                                                "justifyContent": "center",
-                                                "backgroundColor": _T["surface"],
-                                                "border": f"1px solid {_T['border']}",
-                                                "borderRadius": "10px",
-                                                "textAlign": "center",
-                                                "padding": "24px",
-                                            },
-                                        ),
-                                        html.Div(
-                                            _card(
-                                                [
-                                                    dcc.Loading(
-                                                        id="comp-loading-scene",
-                                                        type="circle",
-                                                        color=_T["primary"],
-                                                        children=dcc.Graph(
-                                                            id="comp-scene-graph",
-                                                            figure=go.Figure(),
-                                                            config={
-                                                                "displayModeBar": False,
-                                                                "scrollZoom": False,
-                                                                "displaylogo": False,
-                                                                "staticPlot": False,
-                                                            },
-                                                            style={"height": "640px"},
-                                                        ),
-                                                    )
-                                                ],
-                                                extra_style={"padding": "12px"},
+                                [
+                                    html.Div(
+                                        id="comp-graph-placeholder",
+                                        children=[
+                                            html.Div(
+                                                t(s, "comp.placeholder.title"),
+                                                style={
+                                                    "fontSize": "18px",
+                                                    "fontWeight": "600",
+                                                    "color": _T["text"],
+                                                    "marginBottom": "10px",
+                                                },
                                             ),
-                                            id="comp-graph-card",
-                                            style={"display": "none"},
+                                        ],
+                                        style={
+                                            "height": "640px",
+                                            "display": "flex",
+                                            "flexDirection": "column",
+                                            "alignItems": "center",
+                                            "justifyContent": "center",
+                                            "backgroundColor": _T["surface"],
+                                            "border": f"1px solid {_T['border']}",
+                                            "borderRadius": "10px",
+                                            "textAlign": "center",
+                                            "padding": "24px",
+                                        },
+                                    ),
+                                    html.Div(
+                                        _card(
+                                            [
+                                                dcc.Loading(
+                                                    id="comp-loading-scene",
+                                                    type="circle",
+                                                    color=_T["primary"],
+                                                    children=dcc.Graph(
+                                                        id="comp-scene-graph",
+                                                        figure=go.Figure(),
+                                                        config={
+                                                            "displayModeBar": False,
+                                                            "scrollZoom": False,
+                                                            "displaylogo": False,
+                                                            "staticPlot": False,
+                                                        },
+                                                        style={"height": "640px"},
+                                                    ),
+                                                )
+                                            ],
+                                            extra_style={"padding": "12px"},
                                         ),
-                                    ],
-                                    style={"flex": "8", "minWidth": "0"},
-                                ),
-                                # 20 % — vertical result panel
-                                html.Div(
-                                    html.Div(id="comp-result-panel", style={"height": "100%"}),
-                                    style={"flex": "2", "minWidth": "0", "display": "flex"},
-                                ),
+                                        id="comp-graph-card",
+                                        style={"display": "none"},
+                                    ),
+                                ],
+                                style={"flex": "8", "minWidth": "0"},
+                            ),
+                            # 20 % — vertical result panel
+                            html.Div(
+                                html.Div(id="comp-result-panel", style={"height": "100%"}),
+                                style={"flex": "2", "minWidth": "0", "display": "flex"},
+                            ),
                         ],
                         id="comp-graph-wrapper",
                         style={"display": "none"},
