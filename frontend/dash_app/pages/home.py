@@ -5,6 +5,7 @@ from __future__ import annotations
 from dash import dcc, html
 
 from frontend.dash_app.layout import THEME, _card
+from frontend.i18n import get_strings, t
 
 _T = THEME
 
@@ -66,16 +67,18 @@ def _how_step(title: str, desc: str) -> html.Div:
     )
 
 
-def layout() -> html.Div:
+def layout(lang: str = "pt") -> html.Div:
+    s = get_strings(lang)
+
     return html.Div(
         [
-            # ── Hero ─────────────────────────────────────────────────────────
+            # ── Hero ─────────────────────────────────────────────────────
             html.Div(
                 [
                     html.Div(
                         [
                             html.Span(
-                                "Onde Está o Waldo?",
+                                t(s, "home.hero.title"),
                                 style={
                                     "fontSize": "42px",
                                     "fontWeight": "800",
@@ -83,7 +86,7 @@ def layout() -> html.Div:
                                 },
                             ),
                             html.Span(
-                                " IA",
+                                t(s, "home.hero.accent"),
                                 style={
                                     "fontSize": "42px",
                                     "fontWeight": "300",
@@ -97,9 +100,7 @@ def layout() -> html.Div:
                         },
                     ),
                     html.P(
-                        "Gere uma cena, clique no Waldo e "
-                        "veja se você consegue "
-                        "achar antes do modelo YOLOv8 treinado do zero.",
+                        t(s, "home.hero.subtitle"),
                         style={
                             "fontSize": "16px",
                             "color": _T["text_muted"],
@@ -125,23 +126,20 @@ def layout() -> html.Div:
                 }
             ),
 
-            # ── Info + Stats row ──────────────────────────────────────────────
+            # ── Info + Stats row ──────────────────────────────────────────
             html.Div(
                 [
-                    # Project description
                     _card(
                         [
                             html.Div(
-                                [
-                                    html.Span(
-                                        "O Projeto",
-                                        style={
-                                            "fontSize": "16px",
-                                            "fontWeight": "700",
-                                            "color": _T["text"],
-                                        },
-                                    ),
-                                ],
+                                html.Span(
+                                    t(s, "home.project.title"),
+                                    style={
+                                        "fontSize": "16px",
+                                        "fontWeight": "700",
+                                        "color": _T["text"],
+                                    },
+                                ),
                                 style={
                                     "display": "flex",
                                     "alignItems": "center",
@@ -150,14 +148,12 @@ def layout() -> html.Div:
                             ),
                             html.P(
                                 [
-                                    "Um pipeline completo de ",
+                                    t(s, "home.project.body1_pre"),
                                     html.Strong(
-                                        "visão computacional",
+                                        t(s, "home.project.body1_strong"),
                                         style={"color": _T["primary"]},
                                     ),
-                                    " construído do zero: geração de dataset "
-                                    "sintético, treinamento de YOLOv8 e "
-                                    "inferência em tempo real via API.",
+                                    t(s, "home.project.body1_post"),
                                 ],
                                 style={
                                     "fontSize": "14px",
@@ -167,10 +163,7 @@ def layout() -> html.Div:
                                 },
                             ),
                             html.P(
-                                "As cenas são geradas proceduralmente com "
-                                "sprites pixel-art. O modelo aprende a "
-                                "localizar o Waldo entre dezenas de "
-                                "personagens similares.",
+                                t(s, "home.project.body2"),
                                 style={
                                     "fontSize": "14px",
                                     "color": _T["text_muted"],
@@ -182,20 +175,17 @@ def layout() -> html.Div:
                         extra_style={"flex": "2"},
                     ),
 
-                    # Stats
                     _card(
                         [
                             html.Div(
-                                [
-                                    html.Span(
-                                        "Dataset",
-                                        style={
-                                            "fontSize": "16px",
-                                            "fontWeight": "700",
-                                            "color": _T["text"],
-                                        },
-                                    ),
-                                ],
+                                html.Span(
+                                    t(s, "home.stats.title"),
+                                    style={
+                                        "fontSize": "16px",
+                                        "fontWeight": "700",
+                                        "color": _T["text"],
+                                    },
+                                ),
                                 style={
                                     "display": "flex",
                                     "alignItems": "center",
@@ -204,28 +194,21 @@ def layout() -> html.Div:
                             ),
                             html.Div(
                                 [
-                                    _stat("5 000", "cenas de treino"),
-                                    html.Div(
-                                        style={
-                                            "width": "1px",
-                                            "backgroundColor": _T["border"],
-                                            "margin": "0 24px",
-                                        }
-                                    ),
-                                    _stat("3", "dificuldades"),
-                                    html.Div(
-                                        style={
-                                            "width": "1px",
-                                            "backgroundColor": _T["border"],
-                                            "margin": "0 24px",
-                                        }
-                                    ),
-                                    _stat("500", "sprites únicos"),
+                                    _stat("5 000", t(s, "home.stats.scenes")),
+                                    html.Div(style={
+                                        "width": "1px",
+                                        "backgroundColor": _T["border"],
+                                        "margin": "0 24px",
+                                    }),
+                                    _stat("3", t(s, "home.stats.difficulties")),
+                                    html.Div(style={
+                                        "width": "1px",
+                                        "backgroundColor": _T["border"],
+                                        "margin": "0 24px",
+                                    }),
+                                    _stat("500", t(s, "home.stats.sprites")),
                                 ],
-                                style={
-                                    "display": "flex",
-                                    "alignItems": "center",
-                                },
+                                style={"display": "flex", "alignItems": "center"},
                             ),
                         ],
                         extra_style={"flex": "1"},
@@ -241,11 +224,11 @@ def layout() -> html.Div:
                 },
             ),
 
-            # ── How it works ──────────────────────────────────────────────────
+            # ── How it works ──────────────────────────────────────────────
             html.Div(
                 [
                     html.P(
-                        "COMO FUNCIONA",
+                        t(s, "home.how.label"),
                         style={
                             "color": _T["text_muted"],
                             "fontSize": "11px",
@@ -258,10 +241,8 @@ def layout() -> html.Div:
                     html.Div(
                         [
                             _how_step(
-                                "1. Geração da cena",
-                                "Uma cena 640×640 é gerada proceduralmente "
-                                "com sprites pixel-art e um fundo aleatório. "
-                                "O Waldo é inserido em posição aleatória.",
+                                t(s, "home.how.step1.title"),
+                                t(s, "home.how.step1.desc"),
                             ),
                             html.Div(
                                 "→",
@@ -273,9 +254,8 @@ def layout() -> html.Div:
                                 },
                             ),
                             _how_step(
-                                "2. Seu palpite",
-                                "Clique na imagem onde você acha que o Waldo "
-                                "está. Você tem uma tentativa por cena.",
+                                t(s, "home.how.step2.title"),
+                                t(s, "home.how.step2.desc"),
                             ),
                             html.Div(
                                 "→",
@@ -287,9 +267,8 @@ def layout() -> html.Div:
                                 },
                             ),
                             _how_step(
-                                "3. IA detecta",
-                                "O modelo YOLOv8 analisa a mesma cena e tenta "
-                                "localizar o Waldo. Quem achou primeiro?",
+                                t(s, "home.how.step3.title"),
+                                t(s, "home.how.step3.desc"),
                             ),
                         ],
                         style={
@@ -306,12 +285,12 @@ def layout() -> html.Div:
                 },
             ),
 
-            # ── CTA footer ────────────────────────────────────────────────────
+            # ── CTA ───────────────────────────────────────────────────────
             html.Div(
                 [
                     dcc.Link(
                         html.Button(
-                            "Jogar agora",
+                            t(s, "home.cta.button"),
                             style={
                                 "backgroundColor": _T["primary"],
                                 "color": "#1a1d20",
@@ -328,16 +307,16 @@ def layout() -> html.Div:
                     ),
                     html.Div(
                         [
-                            "ou veja os ",
+                            t(s, "home.cta.prefix"),
                             dcc.Link(
-                                "detalhes técnicos",
+                                t(s, "home.cta.link_text"),
                                 href="/about",
                                 style={
                                     "color": _T["primary"],
                                     "textDecoration": "none",
                                 },
                             ),
-                            " na página Sobre",
+                            t(s, "home.cta.suffix"),
                         ],
                         style={
                             "fontSize": "13px",

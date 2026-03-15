@@ -5,6 +5,7 @@ from __future__ import annotations
 from dash import dcc, html
 
 from frontend.dash_app.layout import THEME, _card
+from frontend.i18n import get_strings, t
 
 _T = THEME
 
@@ -133,14 +134,15 @@ def _pipeline_step(
     )
 
 
-def layout() -> html.Div:
+def layout(lang: str = "pt") -> html.Div:
+    s = get_strings(lang)
     return html.Div(
         [
             # ── Page title ────────────────────────────────────────────────────
             html.Div(
                 [
                     html.H1(
-                        "Sobre o projeto",
+                        t(s, "about.title"),
                         style={
                             "fontSize": "28px",
                             "fontWeight": "800",
@@ -149,7 +151,7 @@ def layout() -> html.Div:
                         },
                     ),
                     html.P(
-                        "Detalhes técnicos, arquitetura e pipeline de ML",
+                        t(s, "about.subtitle"),
                         style={
                             "fontSize": "14px",
                             "color": _T["text_muted"],
@@ -166,7 +168,7 @@ def layout() -> html.Div:
                     _card(
                         [
                             html.P(
-                                "Visão geral",
+                                t(s, "about.overview.label"),
                                 style={
                                     "color": _T["text_muted"],
                                     "fontSize": "11px",
@@ -178,15 +180,12 @@ def layout() -> html.Div:
                             ),
                             html.P(
                                 [
-                                    "O ",
+                                    t(s, "about.overview.body1_pre"),
                                     html.Strong(
-                                        "Onde Está o Waldo? Desafio de IA",
+                                        t(s, "about.overview.body1_strong"),
                                         style={"color": _T["text"]},
                                     ),
-                                    " é um projeto end-to-end de visão "
-                                    "computacional. Todo o pipeline — da "
-                                    "geração de dados ao deploy — foi "
-                                    "construído do zero.",
+                                    t(s, "about.overview.body1_suf"),
                                 ],
                                 style={
                                     "fontSize": "14px",
@@ -196,11 +195,7 @@ def layout() -> html.Div:
                                 },
                             ),
                             html.P(
-                                "Sprites pixel-art são gerados "
-                                "proceduralmente e compostos em cenas "
-                                "640×640. Um modelo YOLOv8n é treinado "
-                                "nesse dataset sintético para detectar o "
-                                "Waldo em tempo real.",
+                                t(s, "about.overview.body2"),
                                 style={
                                     "fontSize": "14px",
                                     "color": _T["text_muted"],
@@ -215,7 +210,7 @@ def layout() -> html.Div:
                     _card(
                         [
                             html.P(
-                                "Stack técnico",
+                                t(s, "about.stack.label"),
                                 style={
                                     "color": _T["text_muted"],
                                     "fontSize": "11px",
@@ -227,28 +222,28 @@ def layout() -> html.Div:
                             ),
                             _tech_row(
                                 "ML", "YOLOv8n",
-                                "detecção de objetos (Ultralytics)",
+                                t(s, "about.tech.yolo.desc"),
                             ),
                             _tech_row(
                                 "API", "FastAPI",
-                                "API REST para cenas e inferência",
+                                t(s, "about.tech.fastapi.desc"),
                             ),
                             _tech_row(
                                 "UI", "Dash / Plotly",
-                                "interface interativa",
+                                t(s, "about.tech.dash.desc"),
                             ),
                             _tech_row(
                                 "IMG", "Pillow",
-                                "geração procedural de sprites",
+                                t(s, "about.tech.pillow.desc"),
                             ),
                             _tech_row(
                                 "PY", "Python 3.11",
-                                "linguagem principal",
+                                t(s, "about.tech.python.desc"),
                             ),
                             html.Div(
                                 _tech_row(
                                     "CLOUD", "Cloud Run + GCS",
-                                    "deploy e armazenamento de artefatos",
+                                    t(s, "about.tech.cloud.desc"),
                                 ),
                                 style={"borderBottom": "none"},
                             ),
@@ -268,7 +263,7 @@ def layout() -> html.Div:
             _card(
                 [
                     html.P(
-                        "Pipeline de ML",
+                        t(s, "about.pipeline.label"),
                         style={
                             "color": _T["text_muted"],
                             "fontSize": "11px",
@@ -282,10 +277,8 @@ def layout() -> html.Div:
                         [
                             _pipeline_step(
                                 "1",
-                                "Gerar sprites",
-                                "Sprites pixel-art de personagens e Waldo "
-                                "gerados proceduralmente com temas "
-                                "(tourist / explorer / casual).",
+                                t(s, "about.pipeline.step1.title"),
+                                t(s, "about.pipeline.step1.desc"),
                                 None,
                                 _T["primary"],
                             ),
@@ -300,10 +293,8 @@ def layout() -> html.Div:
                             ),
                             _pipeline_step(
                                 "2",
-                                "Gerar dataset",
-                                "Cenas 640×640 compostas com plano de fundo + "
-                                "personagens + Waldo. Labels em formato YOLO "
-                                "(xywh normalizado).",
+                                t(s, "about.pipeline.step2.title"),
+                                t(s, "about.pipeline.step2.desc"),
                                 None,
                                 _T["success"],
                             ),
@@ -318,10 +309,8 @@ def layout() -> html.Div:
                             ),
                             _pipeline_step(
                                 "3",
-                                "Treinar modelo",
-                                "Ajuste fino do YOLOv8n no conjunto de dados "
-                                "sintético. Pesos salvos em "
-                                "model/models/waldo_yolov8n/.",
+                                t(s, "about.pipeline.step3.title"),
+                                t(s, "about.pipeline.step3.desc"),
                                 None,
                                 _T["warning"],
                             ),
@@ -336,9 +325,8 @@ def layout() -> html.Div:
                             ),
                             _pipeline_step(
                                 "4",
-                                "Avaliar",
-                                "mAP50 e métricas por divisão calculadas "
-                                "no conjunto de validação.",
+                                t(s, "about.pipeline.step4.title"),
+                                t(s, "about.pipeline.step4.desc"),
                                 None,
                                 _T["danger"],
                             ),
@@ -347,8 +335,7 @@ def layout() -> html.Div:
                     html.Div(
                         [
                             html.Span(
-                                "Pipeline completo: executado via pipelines "
-                                "de ML do projeto.",
+                                t(s, "about.pipeline.footer"),
                                 style={
                                     "fontSize": "13px",
                                     "color": _T["text_muted"],
@@ -372,7 +359,7 @@ def layout() -> html.Div:
             _card(
                 [
                     html.P(
-                        "Arquitetura",
+                        t(s, "about.arch.label"),
                         style={
                             "color": _T["text_muted"],
                             "fontSize": "11px",
@@ -384,7 +371,7 @@ def layout() -> html.Div:
                     ),
                     html.Div(
                         [
-                            _arch_box("Interface\n(Dash)", _T["surface2"]),
+                            _arch_box(t(s, "about.arch.box1"), _T["surface2"]),
                             _arch_arrow(),
                             _arch_box(
                                 "FastAPI\n/api/scene\n/api/detect",
@@ -393,7 +380,7 @@ def layout() -> html.Div:
                             ),
                             _arch_arrow(),
                             _arch_box(
-                                "model/models\nYOLOv8n\ninferência",
+                                t(s, "about.arch.box3"),
                                 _T["surface2"],
                             ),
                         ],
@@ -405,9 +392,7 @@ def layout() -> html.Div:
                         },
                     ),
                     html.P(
-                        "A interface nunca importa ML diretamente — toda "
-                        "inferência e geração de cenas passa pela API "
-                        "(arquitetura Opção B).",
+                        t(s, "about.arch.note"),
                         style={
                             "fontSize": "13px",
                             "color": _T["text_muted"],
@@ -422,7 +407,7 @@ def layout() -> html.Div:
             # ── Back to game ──────────────────────────────────────────────────
             html.Div(
                 dcc.Link(
-                    "← Voltar para o jogo",
+                    t(s, "about.back"),
                     href="/game",
                     style={
                         "color": _T["primary"],

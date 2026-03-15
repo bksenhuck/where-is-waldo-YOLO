@@ -101,6 +101,31 @@ html, body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Language toggle buttons ─────────────────────────────────── */
+.lang-btn {
+  background: transparent;
+  color: #7a8288;
+  border: 1px solid #484e55;
+  border-radius: 5px;
+  padding: 3px 9px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s, border-color 0.15s;
+  letter-spacing: 0.5px;
+}
+
+.lang-btn:hover {
+  color: #aab3bc;
+  border-color: #7a8288;
+}
+
+.lang-btn-active {
+  color: #5bc0de;
+  border-color: #5bc0de;
+  background: rgba(91, 192, 222, 0.1);
+}
+
 /* ── Scrollbar ────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #272b30; }

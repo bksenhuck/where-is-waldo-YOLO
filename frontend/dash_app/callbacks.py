@@ -18,6 +18,7 @@ from config.settings import API_BASE
 
 # ── Palette — single source of truth lives in layout.py ──────────────────────
 from frontend.dash_app.layout import THEME as _T
+from frontend.i18n import get_strings, t
 
 _BG = _T["bg"]
 _SURFACE = _T["surface"]
@@ -321,36 +322,41 @@ def _result_row(icon: str, label: str, message: str, color: str) -> html.Div:
     )
 
 
-def _build_result_panel(result: Dict[str, Any]) -> html.Div:
+def _build_result_panel(result: Dict[str, Any], lang: str = "pt") -> html.Div:
     """Render the result card after submission."""
+    s = get_strings(lang)
     user_found: bool = result["user_found"]
     yolo_found: bool = result["yolo_found"]
     yolo_conf: Optional[float] = result.get("yolo_conf")
 
-    user_msg = "Encontrou o Waldo!" if user_found else "Errou o Waldo"
+    user_msg = t(s, "result.you.found") if user_found else t(s, "result.you.missed")
     user_color = _SUCCESS if user_found else _DANGER
 
     if yolo_found and yolo_conf is not None:
-        yolo_msg = f"Encontrou o Waldo! ({yolo_conf:.0%} conf.)"
+        yolo_msg = t(s, "result.yolo.found", conf=f"{yolo_conf:.0%}")
     elif yolo_found:
-        yolo_msg = "Encontrou o Waldo!"
+        yolo_msg = t(s, "result.yolo.found_nc")
     else:
-        yolo_msg = "Não encontrou o Waldo"
+        yolo_msg = t(s, "result.yolo.missed")
     yolo_color = _SUCCESS if yolo_found else _DANGER
 
     # Verdict
     if user_found and yolo_found:
-        verdict = "Você e a IA encontraram o Waldo!"
+        verdict = t(s, "result.verdict.both")
         verdict_color = _SUCCESS
     elif user_found:
-        verdict = "Você venceu a IA!"
+        verdict = t(s, "result.verdict.user")
         verdict_color = _WARNING
     elif yolo_found:
-        verdict = "A IA venceu esta rodada!"
+        verdict = t(s, "result.verdict.yolo")
         verdict_color = _PRIMARY
     else:
-        verdict = "Ninguém encontrou o Waldo desta vez."
+        verdict = t(s, "result.verdict.none")
         verdict_color = _TEXT_MUTED
+
+    col_you = t(s, "result.col.you")
+    col_yolo = t(s, "result.col.yolo")
+    col_result = t(s, "result.col.result")
 
     def _col(label, icon, message, color):
         return html.Div(
@@ -412,20 +418,20 @@ def _build_result_panel(result: Dict[str, Any]) -> html.Div:
             html.Div(
                 [
                     _col(
-                        "Você",
+                        col_you,
                         "+" if user_found else "−",
                         user_msg,
                         user_color,
                     ),
                     _divider(),
                     _col(
-                        "IA (YOLO)",
+                        col_yolo,
                         "+" if yolo_found else "−",
                         yolo_msg,
                         yolo_color,
                     ),
                     _divider(),
-                    _col("Resultado", "", verdict, verdict_color),
+                    _col(col_result, "", verdict, verdict_color),
                 ],
                 style={"display": "flex", "alignItems": "center"},
             ),
@@ -460,19 +466,21 @@ def register_callbacks(app) -> None:
         State("page-home", "children"),
         State("page-about", "children"),
         State("store-game-nav", "data"),
+        State("lang-store", "data"),
         prevent_initial_call="initial_duplicate",
     )
-    def route(pathname, home_children, about_children, nav_count):
+    def route(pathname, home_children, about_children, nav_count, lang):
         # Home and About are lazy-loaded (no stateful components to reset).
         # Game is always recreated so graph starts hidden/fresh on every visit.
-        new_home = home_children or home.layout()
-        new_about = about_children or about.layout()
+        lang = lang or "pt"
+        new_home = home_children or home.layout(lang)
+        new_about = about_children or about.layout(lang)
         nav = (nav_count or 0) + 1
 
         if pathname == "/game":
             return (
                 new_home, _hide,
-                game.layout(), _show,
+                game.layout(lang), _show,
                 new_about, _hide,
                 None, None, None, 0, nav,
             )
@@ -566,7 +574,7 @@ def register_callbacks(app) -> None:
         scene_data: Optional[Dict],
         click_data: Optional[Dict],
     ) -> Optional[Dict]:
-        """Evaluate user guess locally; call API for YOLO inference."""
+        """Evaluate user guess locally and run YOLO inference in-process."""
         if not scene_data or not click_data:
             return no_update
 
@@ -581,14 +589,11 @@ def register_callbacks(app) -> None:
             waldo_bbox,
         )
 
-        # ── YOLO inference via backend API ────────────────────────────
-        resp = requests.post(
-            f"{API_BASE}/api/detect",
-            json={"img_b64": scene_data["img_b64"]},
-            timeout=60,
-        )
-        resp.raise_for_status()
-        detections = resp.json().get("detections", [])
+        # ── YOLO inference in-process (avoids local HTTP round-trip) ──
+        from ml.models.yolo_detector import detect_waldo
+
+        img = _b64_to_pil(scene_data["img_b64"])
+        detections = detect_waldo(img)
 
         yolo_bbox: Optional[List[int]] = None
         yolo_conf: Optional[float] = None
@@ -619,14 +624,18 @@ def register_callbacks(app) -> None:
         Input("store-click", "data"),
         Input("store-result", "data"),
         Input("store-game-nav", "data"),
+        State("lang-store", "data"),
     )
     def render(
         scene_data: Optional[Dict],
         click_data: Optional[Dict],
         result_data: Optional[Dict],
         _nav,
+        lang,
     ):
         """Single renderer: updates figure + UI based on current game state."""
+        lang = lang or "pt"
+        s = get_strings(lang)
 
         _show = {"display": "block"}
         _hide = {"display": "none"}
@@ -651,7 +660,7 @@ def register_callbacks(app) -> None:
                 _placeholder_style,
                 [],
                 True,
-                "Gere uma cena para começar a jogar!",
+                t(s, "game.status.idle"),
             )
 
         img = _b64_to_pil(scene_data["img_b64"])
@@ -660,7 +669,8 @@ def register_callbacks(app) -> None:
         )
         difficulty = scene_data.get("difficulty", "medium")
 
-        diff_labels = {"easy": "Fácil", "medium": "Médio", "hard": "Difícil"}
+        diff_key = {"easy": "game.diff.easy", "medium": "game.diff.medium", "hard": "game.diff.hard"}
+        diff_label = t(s, diff_key.get(difficulty, "game.diff.medium"))
 
         # ── Result phase (after submission) ───────────────────────────
         if result_data is not None:
@@ -676,27 +686,83 @@ def register_callbacks(app) -> None:
                 yolo_bbox=yolo_bbox,  # type: ignore[arg-type]
                 show_truth=True,
             )
-            result_panel = _build_result_panel(result_data)
-            status = (
-                f"[{diff_labels[difficulty]}] Rodada encerrada! "
-                "Gere uma nova cena para jogar de novo."
-            )
+            result_panel = _build_result_panel(result_data, lang)
+            status = t(s, "game.status.done", diff=diff_label)
             return fig, _show, _hide, result_panel, True, status
 
         # ── Click captured — ready to submit ─────────────────────────
         if click_data:
             fig = _scene_figure(img, click=click_data)
-            status = (
-                f"[{diff_labels[difficulty]}] Palpite definido em "
-                f"({click_data['x']}, {click_data['y']}). "
-                "Clique em Enviar palpite quando estiver pronto!"
-            )
+            status = t(s, "game.status.guessed", diff=diff_label,
+                       x=click_data["x"], y=click_data["y"])
             return fig, _show, _hide, [], False, status
 
         # ── Scene generated — waiting for user click ──────────────────
         fig = _scene_figure(img)
-        status = (
-            f"[{diff_labels[difficulty]}] Clique na imagem "
-            "onde você acha que o Waldo está escondido!"
-        )
+        status = t(s, "game.status.waiting", diff=diff_label)
         return fig, _show, _hide, [], True, status
+
+    # ── Lang: toggle PT/EN buttons ─────────────────────────────────
+    from dash import ctx as _ctx
+
+    @app.callback(
+        Output("lang-store", "data"),
+        Input("lang-pt-btn", "n_clicks"),
+        Input("lang-en-btn", "n_clicks"),
+        prevent_initial_call=True,
+    )
+    def toggle_lang(_pt, _en):
+        return "en" if _ctx.triggered_id == "lang-en-btn" else "pt"
+
+    @app.callback(
+        Output("lang-pt-btn", "className"),
+        Output("lang-en-btn", "className"),
+        Input("lang-store", "data"),
+    )
+    def update_lang_buttons(lang):
+        if lang == "en":
+            return "lang-btn", "lang-btn lang-btn-active"
+        return "lang-btn lang-btn-active", "lang-btn"
+
+    # ── Lang: translate nav chrome ──────────────────────────────────
+    @app.callback(
+        Output("nav-logo-text", "children"),
+        Output("nav-link-home", "children"),
+        Output("nav-link-game", "children"),
+        Output("nav-link-about", "children"),
+        Output("footer-text", "children"),
+        Input("lang-store", "data"),
+    )
+    def translate_nav(lang):
+        s = get_strings(lang or "pt")
+        return (
+            t(s, "nav.title"),
+            t(s, "nav.home"),
+            t(s, "nav.game"),
+            t(s, "nav.about"),
+            t(s, "footer.text"),
+        )
+
+    # ── Lang: re-render all pages on language change ────────────────
+    @app.callback(
+        Output("page-home", "children", allow_duplicate=True),
+        Output("page-game", "children", allow_duplicate=True),
+        Output("page-about", "children", allow_duplicate=True),
+        Output("store-scene", "data", allow_duplicate=True),
+        Output("store-click", "data", allow_duplicate=True),
+        Output("store-result", "data", allow_duplicate=True),
+        Output("store-generate-click", "data", allow_duplicate=True),
+        Output("store-game-nav", "data", allow_duplicate=True),
+        Input("lang-store", "data"),
+        State("store-game-nav", "data"),
+        prevent_initial_call=True,
+    )
+    def on_lang_change(lang, nav_count):
+        lang = lang or "pt"
+        nav = (nav_count or 0) + 1
+        return (
+            home.layout(lang),
+            game.layout(lang),
+            about.layout(lang),
+            None, None, None, 0, nav,
+        )

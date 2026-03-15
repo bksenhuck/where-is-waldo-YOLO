@@ -22,10 +22,11 @@ _T = THEME
 _NAV_H = "52px"
 _FOOT_H = "34px"
 
+# (label, href, stable-id) — label is the default PT text shown on load
 _NAV_LINKS = [
-    ("Início",  "/"),
-    ("Jogar", "/game"),
-    ("Sobre", "/about"),
+    ("Início", "/",      "nav-link-home"),
+    ("Jogar",  "/game",  "nav-link-game"),
+    ("Sobre",  "/about", "nav-link-about"),
 ]
 
 
@@ -67,11 +68,11 @@ def _divider() -> html.Hr:
     )
 
 
-def _nav_link(label: str, href: str) -> dcc.Link:
+def _nav_link(label: str, href: str, link_id: str) -> dcc.Link:
     return dcc.Link(
         label,
         href=href,
-        id=f"nav-{label.lower()}",
+        id=link_id,
         style={
             "color": _T["text_muted"],
             "textDecoration": "none",
@@ -89,47 +90,69 @@ def create_layout() -> html.Div:
         [
             dcc.Location(id="url", refresh=False),
 
-            # ── Stores (game state — always present) ─────────────────────
+            # ── Stores ───────────────────────────────────────────────────
             dcc.Store(id="store-scene"),
             dcc.Store(id="store-click"),
             dcc.Store(id="store-result"),
             dcc.Store(id="store-generate-click", data=0),
-            # Incremented every time the user enters /game — guarantees
-            # the render callback fires even when the scene stores are
-            # already None (so graph-card is always hidden on entry).
             dcc.Store(id="store-game-nav", data=0),
+            # Language — persisted in localStorage across sessions
+            dcc.Store(id="lang-store", storage_type="local", data="pt"),
 
-            # ── Fixed header ─────────────────────────────────────────────────
+            # ── Fixed header ─────────────────────────────────────────────
             html.Header(
                 html.Div(
                     [
                         # Logo
                         dcc.Link(
                             html.Div(
-                                [
-                                    html.Span(
-                                        "Onde Está o Waldo?",
-                                        style={
-                                            "fontSize": "18px",
-                                            "fontWeight": "800",
-                                            "color": _T["text"],
-                                        },
-                                    ),
-                                ],
-                                style={
-                                    "display": "flex",
-                                    "alignItems": "center",
-                                },
+                                html.Span(
+                                    "Onde Está o Waldo?",
+                                    id="nav-logo-text",
+                                    style={
+                                        "fontSize": "18px",
+                                        "fontWeight": "800",
+                                        "color": _T["text"],
+                                    },
+                                ),
+                                style={"display": "flex", "alignItems": "center"},
                             ),
                             href="/",
                             style={"textDecoration": "none"},
                         ),
 
-                        # Nav links
-                        html.Nav(
+                        # Nav links + language toggle
+                        html.Div(
                             [
-                                _nav_link(label, href)
-                                for label, href in _NAV_LINKS
+                                html.Nav(
+                                    [
+                                        _nav_link(label, href, link_id)
+                                        for label, href, link_id in _NAV_LINKS
+                                    ],
+                                    style={
+                                        "display": "flex",
+                                        "gap": "28px",
+                                        "alignItems": "center",
+                                    },
+                                ),
+                                # PT / EN toggle
+                                html.Div(
+                                    [
+                                        html.Button(
+                                            "PT",
+                                            id="lang-pt-btn",
+                                            className="lang-btn lang-btn-active",
+                                            n_clicks=0,
+                                        ),
+                                        html.Button(
+                                            "EN",
+                                            id="lang-en-btn",
+                                            className="lang-btn",
+                                            n_clicks=0,
+                                        ),
+                                    ],
+                                    style={"display": "flex", "gap": "4px"},
+                                ),
                             ],
                             style={
                                 "display": "flex",
@@ -175,14 +198,12 @@ def create_layout() -> html.Div:
                 },
             ),
 
-            # ── Fixed footer ─────────────────────────────────────────────────
+            # ── Fixed footer ─────────────────────────────────────────────
             html.Footer(
                 html.Span(
-                    "Onde Está o Waldo? - Desafio de IA",
-                    style={
-                        "color": _T["text_muted"],
-                        "fontSize": "12px",
-                    },
+                    "Onde Está o Waldo? — Desafio de IA",
+                    id="footer-text",
+                    style={"color": _T["text_muted"], "fontSize": "12px"},
                 ),
                 style={
                     "position": "fixed",

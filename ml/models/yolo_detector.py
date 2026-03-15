@@ -41,6 +41,18 @@ def _to_rgb_numpy(image: Image.Image | np.ndarray) -> np.ndarray:
     return image
 
 
+def warmup_detector() -> bool:
+    """Preload model and run one tiny inference to reduce cold-start latency."""
+    selected_model = _default_model_path()
+    if selected_model is None or not selected_model.exists():
+        return False
+
+    model = _load_model(selected_model)
+    dummy = np.zeros((64, 64, 3), dtype=np.uint8)
+    model.predict(source=dummy, conf=0.25, verbose=False)
+    return True
+
+
 def detect_waldo(
     image: Image.Image | np.ndarray,
     model_path: str | Path | None = None,

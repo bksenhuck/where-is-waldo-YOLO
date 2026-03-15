@@ -6,11 +6,13 @@ import plotly.graph_objects as go
 from dash import dcc, html
 
 from frontend.dash_app.layout import THEME, _card, _divider, _section_label
+from frontend.i18n import get_strings, t
 
 _T = THEME
 
 
-def layout() -> html.Div:
+def layout(lang: str = "pt") -> html.Div:
+    s = get_strings(lang)
     return html.Div(
         [
             # ── Left sidebar ──────────────────────────────────────────────────
@@ -18,20 +20,20 @@ def layout() -> html.Div:
                 [
                     _card(
                         [
-                            _section_label("Dificuldade"),
+                            _section_label(t(s, "game.difficulty.label")),
                             dcc.RadioItems(
                                 id="difficulty-radio",
                                 options=[
                                     {
-                                        "label": " Fácil   (20 personagens)",
+                                        "label": " " + t(s, "game.difficulty.easy"),
                                         "value": "easy",
                                     },
                                     {
-                                        "label": " Médio   (80 personagens)",
+                                        "label": " " + t(s, "game.difficulty.medium"),
                                         "value": "medium",
                                     },
                                     {
-                                        "label": " Difícil (150 personagens)",
+                                        "label": " " + t(s, "game.difficulty.hard"),
                                         "value": "hard",
                                     },
                                 ],
@@ -48,7 +50,7 @@ def layout() -> html.Div:
                             ),
                             _divider(),
                             html.Button(
-                                "Gerar cena",
+                                t(s, "game.btn.generate"),
                                 id="btn-generate",
                                 n_clicks=0,
                                 className="btn-primary",
@@ -57,10 +59,10 @@ def layout() -> html.Div:
                     ),
                     _card(
                         [
-                            _section_label("Status"),
+                            _section_label(t(s, "game.status.label")),
                             html.P(
                                 id="status-text",
-                                children="Gere uma cena para começar a jogar!",
+                                children=t(s, "game.status.idle"),
                                 style={
                                     "color": _T["text"],
                                     "fontSize": "14px",
@@ -70,7 +72,7 @@ def layout() -> html.Div:
                             ),
                             _divider(),
                             html.Button(
-                                "Enviar palpite",
+                                t(s, "game.btn.submit"),
                                 id="btn-submit",
                                 n_clicks=0,
                                 disabled=True,
@@ -81,7 +83,7 @@ def layout() -> html.Div:
                     ),
                     _card(
                         [
-                            _section_label("Legenda"),
+                            _section_label(t(s, "game.legend.label")),
                             *[
                                 html.Div(
                                     [
@@ -108,9 +110,9 @@ def layout() -> html.Div:
                                     },
                                 )
                                 for color, label in [
-                                    (_T["warning"], "Seu clique"),
-                                    ("#5cb85c", "Aqui estava o Waldo"),
-                                    (_T["primary"], "Detecção YOLO"),
+                                    (_T["warning"], t(s, "game.legend.click")),
+                                    ("#5cb85c", t(s, "game.legend.waldo")),
+                                    (_T["primary"], t(s, "game.legend.yolo")),
                                 ]
                             ],
                         ],
@@ -133,7 +135,7 @@ def layout() -> html.Div:
                         id="graph-placeholder",
                         children=[
                             html.Div(
-                                "Nenhuma cena carregada",
+                                t(s, "game.placeholder.title"),
                                 style={
                                     "fontSize": "18px",
                                     "fontWeight": "600",
@@ -142,8 +144,7 @@ def layout() -> html.Div:
                                 },
                             ),
                             html.Div(
-                                "Selecione a dificuldade e clique em "
-                                "Gerar cena para começar.",
+                                t(s, "game.placeholder.body"),
                                 style={
                                     "fontSize": "14px",
                                     "color": _T["text_muted"],
