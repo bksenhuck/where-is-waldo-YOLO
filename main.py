@@ -40,7 +40,13 @@ app = api
 
 def main() -> None:
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=PORT, reload=False)
+    uvicorn.run(
+        app,
+        host="127.0.0.1",
+        port=PORT,
+        reload=False,
+        access_log=False,
+    )
 
 
 if __name__ == "__main__":

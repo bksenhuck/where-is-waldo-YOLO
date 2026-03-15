@@ -88,17 +88,19 @@ def _synthetic_person(
     )
 
     arm_w = max(4, int(width * 0.12))
+    arm_y0 = min(shirt_top + 8, shirt_bottom - 1)
+    arm_y1 = max(shirt_bottom - 4, arm_y0 + 1)
     d.rectangle(
-        [body_left - arm_w, shirt_top + 8, body_left, shirt_bottom - 4],
+        [body_left - arm_w, arm_y0, body_left, arm_y1],
         fill=stripe_a,
     )
     d.rectangle(
-        [body_right, shirt_top + 8, body_right + arm_w, shirt_bottom - 4],
+        [body_right, arm_y0, body_right + arm_w, arm_y1],
         fill=stripe_a,
     )
 
     hat_top = int(height * 0.06)
-    hat_bottom = int(height * 0.13)
+    hat_bottom = max(int(height * 0.13), hat_top + 1)
     d.rectangle(
         [width // 2 - head_r, hat_top, width // 2 + head_r, hat_bottom],
         fill=hat_color,

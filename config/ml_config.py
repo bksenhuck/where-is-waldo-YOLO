@@ -10,15 +10,21 @@ Rules:
 """
 from typing import Dict, Tuple
 
-# ── YOLO model ─────────────────────────────────────────────────────────────────
+# ── YOLO model ────────────────────────────────────────────────────────────
 YOLO_BASE_MODEL_NAME: str = "yolov8n.pt"
 YOLO_BASE_MODEL_URL: str = (
     "https://github.com/ultralytics/assets/releases/download/"
     "v8.4.0/yolov8n.pt"
 )
-YOLO_MODEL_NAME: str = "waldo_yolov8n"   # project / run name used by ultralytics
+# project / run name used by ultralytics
+YOLO_MODEL_NAME: str = "waldo_yolov8n"
+# "0" = GPU 0  |  "cpu" = force CPU  |  "" = auto
+YOLO_DEVICE: str = "0"
+# workers=0 avoids Windows shared-memory errors (error 1455)
+YOLO_WORKERS: int = 0
+YOLO_BATCH: int = 8
 
-# ── Scene generation ───────────────────────────────────────────────────────────
+# ── Scene generation ──────────────────────────────────────────────────────
 SCENE_SIZE: Tuple[int, int] = (640, 640)
 
 DIFFICULTY_TO_COUNT: Dict[str, int] = {
@@ -27,7 +33,7 @@ DIFFICULTY_TO_COUNT: Dict[str, int] = {
     "hard":   160,
 }
 
-# ── Dataset split ──────────────────────────────────────────────────────────────
+# ── Dataset split ─────────────────────────────────────────────────────────
 DATASET_TRAIN_RATIO: float = 0.9   # 90 % train / 10 % val
 
 DATASET_DIFFICULTY_WEIGHTS: Dict[str, float] = {
@@ -36,9 +42,10 @@ DATASET_DIFFICULTY_WEIGHTS: Dict[str, float] = {
     "hard":   0.3,
 }
 
-# ── Character sprite generator ─────────────────────────────────────────────────
-CHARACTER_BASE_SIZE: int = 32       # pixels before upscale
-CHARACTER_SCALE: int = 4            # nearest-neighbor upscale factor → 128 px
+# ── Character sprite generator ────────────────────────────────────────────
+CHARACTER_BASE_SIZE: int = 32      # pixels before upscale
+# nearest-neighbor upscale factor → 128 px
+CHARACTER_SCALE: int = 4
 CHARACTER_DEFAULT_COUNT: int = 500
 
 # Probability weights for theme selection (tourist / explorer / casual)

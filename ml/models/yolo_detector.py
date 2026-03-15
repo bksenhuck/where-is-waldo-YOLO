@@ -14,6 +14,9 @@ from backend.utils.config import get_paths
 from config.ml_config import YOLO_MODEL_NAME
 
 
+_model_cache: dict[str, YOLO] = {}
+
+
 def _default_model_path() -> Optional[Path]:
     paths = get_paths()
     primary = paths.models_dir / YOLO_MODEL_NAME / "weights" / "best.pt"
@@ -21,6 +24,13 @@ def _default_model_path() -> Optional[Path]:
         return primary
     candidates = sorted(paths.models_dir.rglob("*.pt"))
     return candidates[-1] if candidates else None
+
+
+def _load_model(model_path: Path) -> YOLO:
+    key = str(model_path)
+    if key not in _model_cache:
+        _model_cache[key] = YOLO(key)
+    return _model_cache[key]
 
 
 def _to_rgb_numpy(image: Image.Image | np.ndarray) -> np.ndarray:
@@ -46,7 +56,7 @@ def detect_waldo(
     if selected_model is None or not selected_model.exists():
         return []
 
-    model = YOLO(str(selected_model))
+    model = _load_model(selected_model)
     rgb = _to_rgb_numpy(image)
     results = model.predict(source=rgb, conf=conf, verbose=False)
     if not results:

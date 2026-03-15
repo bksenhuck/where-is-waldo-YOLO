@@ -1,6 +1,14 @@
 # ── Dev environment (local machine with GPU) ──────────────────────────────────
-# Install: pip install -r requirements-dev.txt
+# Install:
+#   pip install -r requirements-dev.txt
+#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 -r requirements.txt
+
+# PyTorch with CUDA 12.8 — install separately with the index-url above
+# (pip -r cannot mix index-urls inline)
+torch>=2.10.0
+torchvision>=0.25.0
+torchaudio>=2.10.0
 
 # Background removal — GPU (NVIDIA/CUDA)
 rembg[gpu]>=2.0.50

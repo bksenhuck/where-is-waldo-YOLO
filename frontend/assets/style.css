@@ -1,14 +1,12 @@
-/* ── Global reset ─────────────────────────────────────────────── */
-* {
-  box-sizing: border-box;
-}
-
-body {
+/* ── Global reset (also applied inline via index_string) ──────── */
+html, body {
   margin: 0;
   padding: 0;
+  height: 100%;
   font-family: "Inter", "Segoe UI", system-ui, sans-serif;
   background-color: #272b30;
   color: #aab3bc;
+  overflow-x: hidden;
 }
 
 /* ── Dash Graph — remove white flash ─────────────────────────── */
@@ -18,48 +16,72 @@ body {
 
 /* ── Buttons ──────────────────────────────────────────────────── */
 .btn-primary {
-  background-color: #5bc0de;
-  color: #1a1d20;
-  border: none;
+  background-color: #f5f7fa;
+  color: #1f2933;
+  border: 1px solid #cfd7df;
   border-radius: 8px;
-  padding: 12px 24px;
-  font-size: 15px;
-  font-weight: 700;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   width: 100%;
-  transition: background-color 0.15s ease, opacity 0.15s ease;
-  letter-spacing: 0.4px;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease, opacity 0.15s ease;
+  letter-spacing: 0;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: #46b8da;
+  background-color: #e9eef3;
+  border-color: #bdc8d3;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+}
+
+.btn-primary:focus-visible {
+  outline: none;
+  border-color: #8aa4bd;
+  box-shadow: 0 0 0 3px rgba(138, 164, 189, 0.25);
 }
 
 .btn-primary:disabled {
-  opacity: 0.4;
+  background-color: #edf1f5;
+  color: #8b98a5;
+  border-color: #d7dfe7;
+  opacity: 0.75;
   cursor: not-allowed;
 }
 
 .btn-secondary {
-  background-color: #5cb85c;
-  color: #fff;
-  border: none;
+  background-color: #7fd3ea;
+  color: #13313b;
+  border: 1px solid #67bdd5;
   border-radius: 8px;
-  padding: 12px 24px;
-  font-size: 15px;
-  font-weight: 700;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   width: 100%;
-  transition: background-color 0.15s ease, opacity 0.15s ease;
-  letter-spacing: 0.4px;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease, opacity 0.15s ease;
+  letter-spacing: 0;
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background-color: #4cae4c;
+  background-color: #6ec9e2;
+  border-color: #56b4cc;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+}
+
+.btn-secondary:focus-visible {
+  outline: none;
+  border-color: #4ba8c1;
+  box-shadow: 0 0 0 3px rgba(75, 168, 193, 0.25);
 }
 
 .btn-secondary:disabled {
-  opacity: 0.35;
+  background-color: #b9e4f0;
+  color: #6f8f99;
+  border-color: #a7d8e6;
+  opacity: 0.8;
   cursor: not-allowed;
 }
 

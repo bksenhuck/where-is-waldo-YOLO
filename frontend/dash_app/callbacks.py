@@ -37,13 +37,38 @@ def _b64_to_pil(b64: str) -> Image.Image:
     return Image.open(io.BytesIO(data)).convert("RGB")
 
 
+def _apply_spotlight_mask(
+    arr: np.ndarray,
+    waldo_bbox: Tuple[int, int, int, int],
+) -> np.ndarray:
+    """Darken scene outside Waldo bbox using pixel-level blending."""
+
+    h, w = arr.shape[:2]
+    x1, y1, x2, y2 = waldo_bbox
+
+    x1 = max(0, min(w - 1, int(x1)))
+    y1 = max(0, min(h - 1, int(y1)))
+    x2 = max(0, min(w, int(x2)))
+    y2 = max(0, min(h, int(y2)))
+
+    if x2 <= x1 or y2 <= y1:
+        return arr
+
+    masked = arr.astype(np.float32)
+    # Near-blackout outside bbox
+    masked *= 0.22
+    # Keep Waldo area fully visible
+    masked[y1:y2, x1:x2] = arr[y1:y2, x1:x2]
+    return np.clip(masked, 0, 255).astype(np.uint8)
+
+
 # ── Figure builders ───────────────────────────────────────────────────────
 
 def _empty_figure() -> go.Figure:
     """Placeholder figure shown before first scene is generated."""
     fig = go.Figure()
     fig.add_annotation(
-        text="Click <b>⚡ Generate Scene</b> to start the game!",
+        text="Clique em <b>⚡ Gerar cena</b> para começar o jogo!",
         xref="paper",
         yref="paper",
         x=0.5,
@@ -81,6 +106,8 @@ def _scene_figure(
     show_truth:  When True, overlay all bboxes and reveal ground truth.
     """
     arr = np.array(img)
+    if show_truth and waldo_bbox:
+        arr = _apply_spotlight_mask(arr, waldo_bbox)
     h, w = arr.shape[:2]
 
     # Base image figure — px.imshow gives proper pixel-space coordinates
@@ -104,10 +131,23 @@ def _scene_figure(
                     color=_WARNING,
                     line=dict(width=4, color=_WARNING),
                 ),
-                name="Your click",
-                showlegend=True,
+                name="Seu clique",
+                showlegend=False,
             )
         )
+        if show_truth:
+            annotations.append(
+                dict(
+                    x=cx,
+                    y=max(0, cy - 10),
+                    text="<b>Seu clique</b>",
+                    showarrow=False,
+                    font=dict(color=_WARNING, size=12),
+                    bgcolor="rgba(0,0,0,0.65)",
+                    xanchor="center",
+                    yanchor="bottom",
+                )
+            )
 
     if show_truth:
         # ── Ground-truth box (green) ───────────────────────────────────
@@ -117,15 +157,15 @@ def _scene_figure(
                 dict(
                     type="rect",
                     x0=x1, y0=y1, x1=x2, y1=y2,
-                    line=dict(color=_SUCCESS, width=3),
-                    fillcolor="rgba(92,184,92,0.12)",
+                    line=dict(color=_SUCCESS, width=4),
+                    fillcolor="rgba(120,220,140,0.20)",
                 )
             )
             annotations.append(
                 dict(
                     x=x1,
                     y=max(0, y1 - 6),
-                    text="<b>Ground truth</b>",
+                    text="<b>Aqui estava o Waldo</b>",
                     showarrow=False,
                     font=dict(color=_SUCCESS, size=12),
                     bgcolor="rgba(0,0,0,0.65)",
@@ -137,6 +177,8 @@ def _scene_figure(
         # ── YOLO detection box (blue) ──────────────────────────────────
         if yolo_bbox:
             x1, y1, x2, y2 = yolo_bbox
+            mx = (x1 + x2) / 2
+            my = (y1 + y2) / 2
             shapes.append(
                 dict(
                     type="rect",
@@ -149,12 +191,39 @@ def _scene_figure(
                 dict(
                     x=x2,
                     y=max(0, y1 - 6),
-                    text="<b>YOLO AI</b>",
+                    text="<b>IA (YOLO)</b>",
                     showarrow=False,
                     font=dict(color=_PRIMARY, size=12),
                     bgcolor="rgba(0,0,0,0.65)",
                     xanchor="right",
                     yanchor="bottom",
+                )
+            )
+            scatter_traces.append(
+                go.Scatter(
+                    x=[mx],
+                    y=[my],
+                    mode="markers",
+                    marker=dict(
+                        symbol="diamond",
+                        size=12,
+                        color=_PRIMARY,
+                        line=dict(width=2, color="#ffffff"),
+                    ),
+                    name="Modelo (YOLO)",
+                    showlegend=False,
+                )
+            )
+            annotations.append(
+                dict(
+                    x=mx,
+                    y=min(h - 1, my + 12),
+                    text="<b>Modelo (YOLO)</b>",
+                    showarrow=False,
+                    font=dict(color=_PRIMARY, size=12),
+                    bgcolor="rgba(0,0,0,0.65)",
+                    xanchor="center",
+                    yanchor="top",
                 )
             )
 
@@ -173,7 +242,7 @@ def _scene_figure(
             showticklabels=False,
             showgrid=False,
             zeroline=False,
-            fixedrange=False,
+            fixedrange=True,
         ),
         yaxis=dict(
             range=[h - 0.5, -0.5],  # top-down image orientation
@@ -181,7 +250,7 @@ def _scene_figure(
             showgrid=False,
             zeroline=False,
             scaleanchor="x",
-            fixedrange=False,
+            fixedrange=True,
         ),
         legend=dict(
             orientation="h",
@@ -194,7 +263,7 @@ def _scene_figure(
             bordercolor=_SURFACE,
             borderwidth=1,
         ),
-        dragmode="zoom",
+        dragmode=False,
         uirevision="static",  # preserves zoom/pan across re-renders
     )
 
@@ -211,7 +280,7 @@ def _result_card(children: list) -> html.Div:
             "backgroundColor": _SURFACE,
             "border": f"1px solid {_SUCCESS}40",
             "borderRadius": "10px",
-            "padding": "18px",
+            "padding": "12px 18px",
         },
     )
 
@@ -258,72 +327,107 @@ def _build_result_panel(result: Dict[str, Any]) -> html.Div:
     yolo_found: bool = result["yolo_found"]
     yolo_conf: Optional[float] = result.get("yolo_conf")
 
-    user_msg = "Found Waldo! 🎉" if user_found else "Missed Waldo 😅"
+    user_msg = "Encontrou o Waldo!" if user_found else "Errou o Waldo"
     user_color = _SUCCESS if user_found else _DANGER
 
     if yolo_found and yolo_conf is not None:
-        yolo_msg = f"Found Waldo! ({yolo_conf:.0%} conf)"
+        yolo_msg = f"Encontrou o Waldo! ({yolo_conf:.0%} conf.)"
     elif yolo_found:
-        yolo_msg = "Found Waldo!"
+        yolo_msg = "Encontrou o Waldo!"
     else:
-        yolo_msg = "Didn't find Waldo"
+        yolo_msg = "Não encontrou o Waldo"
     yolo_color = _SUCCESS if yolo_found else _DANGER
 
     # Verdict
     if user_found and yolo_found:
-        verdict = "Both you and the AI found Waldo! 🏆"
+        verdict = "Você e a IA encontraram o Waldo!"
         verdict_color = _SUCCESS
     elif user_found:
-        verdict = "You beat the AI! 🥇"
+        verdict = "Você venceu a IA!"
         verdict_color = _WARNING
     elif yolo_found:
-        verdict = "AI wins this round! 🤖"
+        verdict = "A IA venceu esta rodada!"
         verdict_color = _PRIMARY
     else:
-        verdict = "Nobody found Waldo this time…"
+        verdict = "Ninguém encontrou o Waldo desta vez."
         verdict_color = _TEXT_MUTED
+
+    def _col(label, icon, message, color):
+        return html.Div(
+            [
+                html.Span(
+                    label,
+                    style={
+                        "color": _TEXT_MUTED,
+                        "fontSize": "11px",
+                        "fontWeight": "700",
+                        "textTransform": "uppercase",
+                        "letterSpacing": "1px",
+                        "display": "block",
+                        "marginBottom": "3px",
+                    },
+                ),
+                html.Div(
+                    [
+                        *(
+                            [html.Span(
+                                icon,
+                                style={
+                                    "fontSize": "16px",
+                                    "fontWeight": "700",
+                                    "color": color,
+                                    "marginRight": "6px",
+                                },
+                            )]
+                            if icon else []
+                        ),
+                        html.Span(
+                            message,
+                            style={
+                                "color": color,
+                                "fontSize": "15px",
+                                "fontWeight": "600",
+                            },
+                        ),
+                    ],
+                    style={
+                        "display": "flex",
+                        "alignItems": "center",
+                        "justifyContent": "center",
+                    },
+                ),
+            ],
+            style={"flex": "1", "textAlign": "center"},
+        )
+
+    def _divider():
+        return html.Div(style={
+            "width": "1px",
+            "backgroundColor": f"{_TEXT_MUTED}40",
+            "alignSelf": "stretch",
+        })
 
     return _result_card(
         [
-            html.P(
-                "RESULTS",
-                style={
-                    "color": _TEXT_MUTED,
-                    "fontSize": "11px",
-                    "fontWeight": "700",
-                    "textTransform": "uppercase",
-                    "letterSpacing": "1px",
-                    "margin": "0 0 14px 0",
-                },
-            ),
-            _result_row(
-                "🧑" if user_found else "❌",
-                "You",
-                user_msg,
-                user_color,
-            ),
-            _result_row(
-                "🤖" if yolo_found else "❌",
-                "YOLO AI",
-                yolo_msg,
-                yolo_color,
-            ),
-            html.Hr(
-                style={
-                    "border": "none",
-                    "borderTop": f"1px solid {_TEXT_MUTED}40",
-                    "margin": "2px 0 12px 0",
-                }
-            ),
-            html.P(
-                verdict,
-                style={
-                    "color": verdict_color,
-                    "fontSize": "14px",
-                    "fontWeight": "700",
-                    "margin": "0",
-                    "textAlign": "center",
-                },
+            html.Div(
+                [
+                    _col(
+                        "Você",
+                        "+" if user_found else "−",
+                        user_msg,
+                        user_color,
+                    ),
+                    _divider(),
+                    _col(
+                        "IA (YOLO)",
+                        "+" if yolo_found else "−",
+                        yolo_msg,
+                        yolo_color,
+                    ),
+                    _divider(),
+                    _col("Resultado", "", verdict, verdict_color),
+                ],
+                style={"display": "flex", "alignItems": "center"},
             ),
         ]
     )
@@ -334,27 +438,89 @@ def _build_result_panel(result: Dict[str, Any]) -> html.Div:
 def register_callbacks(app) -> None:
     """Register all Dash callbacks onto the app instance."""
 
+    # ── CB0: Page routing ──────────────────────────────────────────────
+    from frontend.dash_app.pages import home, game, about
+
+    _show = {"display": "block"}
+    _hide = {"display": "none"}
+
+    @app.callback(
+        Output("page-home", "children"),
+        Output("page-home", "style"),
+        Output("page-game", "children"),
+        Output("page-game", "style"),
+        Output("page-about", "children"),
+        Output("page-about", "style"),
+        Output("store-scene", "data", allow_duplicate=True),
+        Output("store-click", "data", allow_duplicate=True),
+        Output("store-result", "data", allow_duplicate=True),
+        Output("store-generate-click", "data", allow_duplicate=True),
+        Output("store-game-nav", "data"),
+        Input("url", "pathname"),
+        State("page-home", "children"),
+        State("page-about", "children"),
+        State("store-game-nav", "data"),
+        prevent_initial_call="initial_duplicate",
+    )
+    def route(pathname, home_children, about_children, nav_count):
+        # Home and About are lazy-loaded (no stateful components to reset).
+        # Game is always recreated so graph starts hidden/fresh on every visit.
+        new_home = home_children or home.layout()
+        new_about = about_children or about.layout()
+        nav = (nav_count or 0) + 1
+
+        if pathname == "/game":
+            return (
+                new_home, _hide,
+                game.layout(), _show,
+                new_about, _hide,
+                None, None, None, 0, nav,
+            )
+        if pathname == "/about":
+            return (
+                new_home, _hide,
+                no_update, _hide,
+                new_about, _show,
+                no_update, no_update, no_update, no_update, no_update,
+            )
+        # default: "/"
+        return (
+            new_home, _show,
+            no_update, _hide,
+            new_about, _hide,
+            no_update, no_update, no_update, no_update, no_update,
+        )
+
     # ── CB1: Generate scene (calls backend API) ────────────────────────
     @app.callback(
         Output("store-scene", "data"),
         Output("store-click", "data", allow_duplicate=True),
         Output("store-result", "data", allow_duplicate=True),
+        Output("store-generate-click", "data"),
         Input("btn-generate", "n_clicks"),
         State("difficulty-radio", "value"),
+        State("store-generate-click", "data"),
         prevent_initial_call=True,
     )
     def on_generate(
-        _n_clicks: int,
+        n_clicks: int,
         difficulty: str,
-    ) -> Tuple[Dict, None, None]:
+        last_generate_click: Optional[int],
+    ) -> Tuple[Dict, None, None, int]:
         """Call /api/scene to generate a new scene and reset game state."""
+        last_click = int(last_generate_click or 0)
+        # Prevent duplicate scene generation when callbacks re-fire without
+        # an actual new button click.
+        if not n_clicks or n_clicks <= last_click:
+            return no_update, no_update, no_update, last_click
+
         resp = requests.get(
             f"{API_BASE}/api/scene",
             params={"difficulty": difficulty},
             timeout=60,
         )
         resp.raise_for_status()
-        return resp.json(), None, None
+        return resp.json(), None, None, n_clicks
 
     # ── CB2: Capture user click on the scene graph ─────────────────────
     @app.callback(
@@ -377,6 +543,15 @@ def register_callbacks(app) -> None:
             return no_update
         pt = click_data["points"][0]
         return {"x": round(float(pt["x"])), "y": round(float(pt["y"]))}
+
+    # ── CB2b: Disable submit immediately on click (before CB3 finishes) ──
+    @app.callback(
+        Output("btn-submit", "disabled", allow_duplicate=True),
+        Input("btn-submit", "n_clicks"),
+        prevent_initial_call=True,
+    )
+    def disable_submit_on_click(_):
+        return True
 
     # ── CB3: Evaluate guess + call /api/detect for YOLO inference ──────
     @app.callback(
@@ -435,27 +610,48 @@ def register_callbacks(app) -> None:
     # ── CB4: Render figure + UI state from stores ──────────────────────
     @app.callback(
         Output("scene-graph", "figure"),
+        Output("graph-card", "style"),
+        Output("graph-placeholder", "style"),
         Output("result-panel", "children"),
         Output("btn-submit", "disabled"),
         Output("status-text", "children"),
         Input("store-scene", "data"),
         Input("store-click", "data"),
         Input("store-result", "data"),
+        Input("store-game-nav", "data"),
     )
     def render(
         scene_data: Optional[Dict],
         click_data: Optional[Dict],
         result_data: Optional[Dict],
-    ) -> Tuple[go.Figure, list, bool, str]:
+        _nav,
+    ):
         """Single renderer: updates figure + UI based on current game state."""
+
+        _show = {"display": "block"}
+        _hide = {"display": "none"}
+        _placeholder_style = {
+            "height": "640px",
+            "display": "flex",
+            "flexDirection": "column",
+            "alignItems": "center",
+            "justifyContent": "center",
+            "backgroundColor": _SURFACE,
+            "border": f"1px solid {_T['border']}",
+            "borderRadius": "10px",
+            "textAlign": "center",
+            "padding": "24px",
+        }
 
         # ── No scene yet ─────────────────────────────────────────────
         if not scene_data:
             return (
-                _empty_figure(),
+                go.Figure(),
+                _hide,
+                _placeholder_style,
                 [],
                 True,
-                "Generate a scene to start playing!",
+                "Gere uma cena para começar a jogar!",
             )
 
         img = _b64_to_pil(scene_data["img_b64"])
@@ -464,7 +660,7 @@ def register_callbacks(app) -> None:
         )
         difficulty = scene_data.get("difficulty", "medium")
 
-        diff_labels = {"easy": "Easy", "medium": "Medium", "hard": "Hard"}
+        diff_labels = {"easy": "Fácil", "medium": "Médio", "hard": "Difícil"}
 
         # ── Result phase (after submission) ───────────────────────────
         if result_data is not None:
@@ -482,25 +678,25 @@ def register_callbacks(app) -> None:
             )
             result_panel = _build_result_panel(result_data)
             status = (
-                f"[{diff_labels[difficulty]}] Round over! "
-                "Generate a new scene to play again."
+                f"[{diff_labels[difficulty]}] Rodada encerrada! "
+                "Gere uma nova cena para jogar de novo."
             )
-            return fig, result_panel, True, status
+            return fig, _show, _hide, result_panel, True, status
 
         # ── Click captured — ready to submit ─────────────────────────
         if click_data:
             fig = _scene_figure(img, click=click_data)
             status = (
-                f"[{diff_labels[difficulty]}] Guess set at "
+                f"[{diff_labels[difficulty]}] Palpite definido em "
                 f"({click_data['x']}, {click_data['y']}). "
-                "Click Submit when ready!"
+                "Clique em Enviar palpite quando estiver pronto!"
             )
-            return fig, [], False, status
+            return fig, _show, _hide, [], False, status
 
         # ── Scene generated — waiting for user click ──────────────────
         fig = _scene_figure(img)
         status = (
-            f"[{diff_labels[difficulty]}] Click on the image "
-            "where you think Waldo is hiding!"
+            f"[{diff_labels[difficulty]}] Clique na imagem "
+            "onde você acha que o Waldo está escondido!"
         )
-        return fig, [], True, status
+        return fig, _show, _hide, [], True, status

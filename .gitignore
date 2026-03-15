@@ -45,9 +45,9 @@ data/labels/
 data/models/
 
 # Raw assets (downloaded / generated — restore from GCS)
-frontend/assets/backgrounds/
-frontend/assets/characters/
-frontend/assets/waldo/
+data/assets/backgrounds/
+data/assets/characters/
+data/assets/waldo/
 
 # GCS service-account credentials
 service-account*.json

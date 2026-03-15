@@ -19,6 +19,7 @@ from typing import Dict, List, Tuple, TypedDict
 from PIL import Image, ImageDraw
 from tqdm import tqdm
 
+from backend.utils.config import get_paths
 from backend.utils.logging_utils import get_logger
 from config.ml_config import (
     CHARACTER_BASE_SIZE,
@@ -38,9 +39,9 @@ if str(_ROOT) not in sys.path:
 # Constants and palette
 # ----------------------------------------------------------------------------
 
-ASSETS_DIR = _ROOT / "frontend" / "assets"
-OUTPUT_DIR = ASSETS_DIR / "characters"
-WALDO_DIR = ASSETS_DIR / "waldo"
+_paths = get_paths()
+OUTPUT_DIR = _paths.characters_dir
+WALDO_DIR = _paths.waldo_dir
 
 DEFAULT_COUNT = CHARACTER_DEFAULT_COUNT
 BASE_SIZE = CHARACTER_BASE_SIZE
