@@ -778,6 +778,31 @@ def register_comp_callbacks(app) -> None:
 
         return 0, True, result, updated_comp
 
+    # ── COMP-CB-TRANSLATE: Re-render static text on language change ───
+    @app.callback(
+        Output("comp-start-screen", "children"),
+        Output("comp-btn-restart", "children"),
+        Output("comp-graph-placeholder", "children"),
+        Input("lang-store", "data"),
+        prevent_initial_call=True,
+    )
+    def translate_comp_static(lang: Optional[str]):
+        from frontend.dash_app.pages.competition import _start_screen_content
+        lang = lang or "pt"
+        s = get_strings(lang)
+        placeholder = [
+            html.Div(
+                t(s, "comp.placeholder.title"),
+                style={
+                    "fontSize": "18px",
+                    "fontWeight": "600",
+                    "color": _TEXT,
+                    "marginBottom": "10px",
+                },
+            ),
+        ]
+        return _start_screen_content(lang), t(s, "comp.btn.play_again"), placeholder
+
     # ── COMP-CB-TIMER-DISPLAY: Render the timer card ──────────────────
     @app.callback(
         Output("comp-timer-display", "children"),
