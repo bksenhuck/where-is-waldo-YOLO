@@ -33,6 +33,7 @@ _BORDER = _T["border"]
 
 _show = {"display": "block"}
 _hide = {"display": "none"}
+_show_flex = {"display": "flex", "gap": "12px", "alignItems": "stretch"}
 
 
 # ── Scene generation helper ─────────────────────────────────────────────────
@@ -308,6 +309,126 @@ def _render_final_content(comp: Dict, lang: str) -> html.Div:
     )
 
 
+def _build_result_panel_vertical(result: Dict, lang: str = "pt") -> html.Div:
+    """Vertical 3-row result card for the competition side panel (20% column)."""
+    s = get_strings(lang)
+    user_found: bool = result["user_found"]
+    yolo_found: bool = result["yolo_found"]
+    yolo_conf: Optional[float] = result.get("yolo_conf")
+
+    from frontend.dash_app.callbacks import _SUCCESS, _DANGER, _WARNING, _PRIMARY, _TEXT_MUTED, _SURFACE
+
+    user_msg = (
+        t(s, "result.you.found") if user_found else t(s, "result.you.missed")
+    )
+    user_color = _SUCCESS if user_found else _DANGER
+
+    if yolo_found and yolo_conf is not None:
+        yolo_msg = t(s, "result.yolo.found", conf=f"{yolo_conf:.0%}")
+    elif yolo_found:
+        yolo_msg = t(s, "result.yolo.found_nc")
+    else:
+        yolo_msg = t(s, "result.yolo.missed")
+    yolo_color = _SUCCESS if yolo_found else _DANGER
+
+    if user_found and yolo_found:
+        verdict = t(s, "result.verdict.both")
+        verdict_color = _SUCCESS
+    elif user_found:
+        verdict = t(s, "result.verdict.user")
+        verdict_color = _WARNING
+    elif yolo_found:
+        verdict = t(s, "result.verdict.yolo")
+        verdict_color = _PRIMARY
+    else:
+        verdict = t(s, "result.verdict.none")
+        verdict_color = _TEXT_MUTED
+
+    def _row(label: str, icon: str, message: str, color: str) -> html.Div:
+        return html.Div(
+            [
+                html.Span(
+                    label,
+                    style={
+                        "color": _TEXT_MUTED,
+                        "fontSize": "11px",
+                        "fontWeight": "700",
+                        "textTransform": "uppercase",
+                        "letterSpacing": "1px",
+                        "display": "block",
+                        "marginBottom": "8px",
+                    },
+                ),
+                html.Div(
+                    [
+                        *(
+                            [html.Span(icon, style={"fontSize": "20px", "fontWeight": "700",
+                                                     "color": color, "marginRight": "6px"})]
+                            if icon else []
+                        ),
+                        html.Span(
+                            message,
+                            style={"color": color, "fontSize": "14px",
+                                   "fontWeight": "600", "lineHeight": "1.3"},
+                        ),
+                    ],
+                    style={"display": "flex", "alignItems": "center", "justifyContent": "center",
+                           "flexWrap": "wrap"},
+                ),
+            ],
+            style={
+                "flex": "1",
+                "display": "flex",
+                "flexDirection": "column",
+                "justifyContent": "center",
+                "alignItems": "center",
+                "textAlign": "center",
+                "padding": "12px 10px",
+            },
+        )
+
+    def _divider() -> html.Div:
+        return html.Div(style={
+            "height": "1px",
+            "backgroundColor": f"{_TEXT_MUTED}30",
+            "width": "100%",
+        })
+
+    return html.Div(
+        [
+            _row(t(s, "result.col.you"),    "+" if user_found else "−", user_msg,  user_color),
+            _divider(),
+            _row(t(s, "result.col.yolo"),   "+" if yolo_found else "−", yolo_msg,  yolo_color),
+            _divider(),
+            _row(t(s, "result.col.result"), "",                         verdict,   verdict_color),
+        ],
+        style={
+            "backgroundColor": _SURFACE,
+            "border": f"1px solid {_SUCCESS}40",
+            "borderRadius": "10px",
+            "display": "flex",
+            "flexDirection": "column",
+            "width": "100%",
+            "height": "100%",
+            "boxSizing": "border-box",
+        },
+    )
+
+
+def _result_panel_empty() -> html.Div:
+    """Placeholder shown in the right panel while waiting for a result."""
+    return html.Div(
+        style={
+            "backgroundColor": _SURFACE,
+            "border": f"1px solid {_BORDER}",
+            "borderRadius": "10px",
+            "width": "100%",
+            "height": "100%",
+            "boxSizing": "border-box",
+        },
+    )
+
+
 # ── Callback registration ───────────────────────────────────────────────────
 
 def register_comp_callbacks(app) -> None:
@@ -580,11 +701,11 @@ def register_comp_callbacks(app) -> None:
             return (
                 header,
                 _hide,
-                _show,          # graph wrapper visible
-                _placeholder_style,   # placeholder visible
-                _hide,               # graph card hidden
+                _show_flex,          # graph wrapper: flex row
+                _placeholder_style,
+                _hide,
                 go.Figure(),
-                [],
+                _result_panel_empty(),
                 _hide,
                 [],
                 True,
@@ -609,11 +730,11 @@ def register_comp_callbacks(app) -> None:
                 yolo_bbox=yolo_bbox,  # type: ignore[arg-type]
                 show_truth=True,
             )
-            result_panel = _build_result_panel(result_data, lang)
+            result_panel = _build_result_panel_vertical(result_data, lang)
             return (
                 header,
                 _hide,
-                _show,
+                _show_flex,
                 _hide,
                 _show,          # graph card: visible
                 fig,
@@ -634,11 +755,11 @@ def register_comp_callbacks(app) -> None:
             return (
                 header,
                 _hide,
-                _show,
+                _show_flex,
                 _hide,
                 _show,
                 fig,
-                [],
+                _result_panel_empty(),
                 _hide,
                 [],
                 False,          # submit: enabled
@@ -654,11 +775,11 @@ def register_comp_callbacks(app) -> None:
         return (
             header,
             _hide,
-            _show,
+            _show_flex,
             _hide,
             _show,
             fig,
-            [],
+            _result_panel_empty(),
             _hide,
             [],
             True,           # submit: disabled until click
