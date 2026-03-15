@@ -9,25 +9,30 @@ from fastapi import Header, HTTPException
 
 # ── Internal API key ──────────────────────────────────────────────────────────
 
-async def require_api_key(x_api_key: str = Header(..., alias="X-Api-Key")) -> None:
-    """Validates X-Api-Key header on every call to /api/scene and /api/detect.
 
-    The key is shared only between the Dash backend process and FastAPI — it is
-    never sent to the browser.  External callers that don't know the key receive
-    a 403 immediately, before any ML work is done.
+async def require_api_key(
+    x_api_key: str | None = Header(None, alias="X-Api-Key"),
+) -> None:
+    """Validates X-Api-Key header on /api/scene and /api/detect.
 
-    Returns 503 when INTERNAL_API_KEY env var is not set (safe default).
+    The key is shared only between the Dash server process and FastAPI —
+    it is never sent to the browser.  External callers without the key
+    receive a 403 before any ML work is done.
+
+    When INTERNAL_API_KEY is not set (local dev), all requests are allowed.
+    Set it in production to enforce access control.
     """
     expected = os.getenv("INTERNAL_API_KEY", "").strip()
     if not expected:
-        raise HTTPException(503, "API is not configured on this server.")
-    if not secrets.compare_digest(x_api_key, expected):
+        # Not configured — open mode (local development).
+        return
+    if not x_api_key or not secrets.compare_digest(x_api_key, expected):
         raise HTTPException(403, "Forbidden.")
 
 
 # ── Rate limiter (slowapi) ────────────────────────────────────────────────────
 
-RATE_LIMIT_SCENE  = os.getenv("RATE_LIMIT_SCENE",  "30/minute")
+RATE_LIMIT_SCENE = os.getenv("RATE_LIMIT_SCENE", "30/minute")
 RATE_LIMIT_DETECT = os.getenv("RATE_LIMIT_DETECT", "30/minute")
 
 try:
