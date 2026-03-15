@@ -449,7 +449,7 @@ def register_callbacks(app) -> None:
     """Register all Dash callbacks onto the app instance."""
 
     # ── CB0: Page routing ──────────────────────────────────────────────
-    from frontend.dash_app.pages import home, game, about
+    from frontend.dash_app.pages import home, game, about, competition, model
 
     _show = {"display": "block"}
     _hide = {"display": "none"}
@@ -461,6 +461,10 @@ def register_callbacks(app) -> None:
         Output("page-game", "style"),
         Output("page-about", "children"),
         Output("page-about", "style"),
+        Output("page-competition", "children"),
+        Output("page-competition", "style"),
+        Output("page-model", "children"),
+        Output("page-model", "style"),
         Output("store-scene", "data", allow_duplicate=True),
         Output("store-click", "data", allow_duplicate=True),
         Output("store-result", "data", allow_duplicate=True),
@@ -475,7 +479,7 @@ def register_callbacks(app) -> None:
     )
     def route(pathname, home_children, about_children, nav_count, lang):
         # Home and About are lazy-loaded (no stateful components to reset).
-        # Game is always recreated so graph starts hidden/fresh on every visit.
+        # Game and Competition are always recreated fresh on every visit.
         lang = lang or "pt"
         new_home = home_children or home.layout(lang)
         new_about = about_children or about.layout(lang)
@@ -486,13 +490,35 @@ def register_callbacks(app) -> None:
                 new_home, _hide,
                 game.layout(lang), _show,
                 new_about, _hide,
+                no_update, _hide,
+                no_update, _hide,
                 None, None, None, 0, nav,
+            )
+        if pathname == "/competition":
+            return (
+                new_home, _hide,
+                no_update, _hide,
+                new_about, _hide,
+                competition.layout(lang), _show,
+                no_update, _hide,
+                no_update, no_update, no_update, no_update, no_update,
             )
         if pathname == "/about":
             return (
                 new_home, _hide,
                 no_update, _hide,
                 new_about, _show,
+                no_update, _hide,
+                no_update, _hide,
+                no_update, no_update, no_update, no_update, no_update,
+            )
+        if pathname == "/model":
+            return (
+                new_home, _hide,
+                no_update, _hide,
+                new_about, _hide,
+                no_update, _hide,
+                model.layout(lang), _show,
                 no_update, no_update, no_update, no_update, no_update,
             )
         # default: "/"
@@ -500,6 +526,8 @@ def register_callbacks(app) -> None:
             new_home, _show,
             no_update, _hide,
             new_about, _hide,
+            no_update, _hide,
+            no_update, _hide,
             no_update, no_update, no_update, no_update, no_update,
         )
 
@@ -738,6 +766,8 @@ def register_callbacks(app) -> None:
         Output("nav-logo-text", "children"),
         Output("nav-link-home", "children"),
         Output("nav-link-game", "children"),
+        Output("nav-link-competition", "children"),
+        Output("nav-link-model", "children"),
         Output("nav-link-about", "children"),
         Output("footer-text", "children"),
         Input("lang-store", "data"),
@@ -748,6 +778,8 @@ def register_callbacks(app) -> None:
             t(s, "nav.title"),
             t(s, "nav.home"),
             t(s, "nav.game"),
+            t(s, "comp.nav"),
+            t(s, "nav.model"),
             t(s, "nav.about"),
             t(s, "footer.text"),
         )
@@ -757,6 +789,8 @@ def register_callbacks(app) -> None:
         Output("page-home", "children", allow_duplicate=True),
         Output("page-game", "children", allow_duplicate=True),
         Output("page-about", "children", allow_duplicate=True),
+        Output("page-competition", "children", allow_duplicate=True),
+        Output("page-model", "children", allow_duplicate=True),
         Output("store-scene", "data", allow_duplicate=True),
         Output("store-click", "data", allow_duplicate=True),
         Output("store-result", "data", allow_duplicate=True),
@@ -773,5 +807,9 @@ def register_callbacks(app) -> None:
             home.layout(lang),
             game.layout(lang),
             about.layout(lang),
+            no_update,          # competition: don't reset mid-game on lang change
+            no_update,          # model: don't reset
             None, None, None, 0, nav,
         )
+
+    # (model page routing handled by main route CB0)
