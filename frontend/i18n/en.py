@@ -212,5 +212,18 @@ STRINGS: dict[str, str] = {
     "model.series.val_cls":     "Val. — Cls",
     "model.series.val_dfl":     "Val. — DFL",
     "model.error":              "Error loading training data: {e}",
+    # ── Model guide card
+    "model.guide.title":            "Metrics Guide",
+    "model.guide.eval.heading":     "Evaluation Metrics",
+    "model.guide.loss.heading":     "Loss Curves",
+    "model.guide.map50.desc":       "Mean Average Precision at IoU ≥ 50%. A predicted box counts as correct if it overlaps the ground-truth box by at least half. The main benchmark for detection quality.",
+    "model.guide.map5095.desc":     "mAP averaged over IoU thresholds from 0.50 to 0.95. A stricter criterion: the predicted box must be well-aligned, not just roughly in the right area.",
+    "model.guide.precision.desc":   "Of all predicted bounding boxes, what fraction actually contains Waldo. High precision = few false positives.",
+    "model.guide.recall.desc":      "Of all Waldo instances in the images, what fraction were detected. High recall = few missed detections.",
+    "model.guide.box.desc":         "Error in predicting bounding box coordinates (center and dimensions). Decreases as the model learns to frame Waldo more accurately.",
+    "model.guide.cls.desc":         "Classification loss — how confident the model is in predicting the correct class (Waldo vs. background). Tends to drop quickly in early epochs.",
+    "model.guide.dfl.desc":         "Distribution Focal Loss — measures the precision of bounding box boundary prediction. Specific to YOLOv8's anchor-free architecture.",
+    "model.guide.trainval.name":    "Train vs. Validation",
+    "model.guide.trainval.desc":    "Solid lines = training set; dashed = validation. Both should decrease and stay close. A growing gap indicates overfitting.",
 }
 

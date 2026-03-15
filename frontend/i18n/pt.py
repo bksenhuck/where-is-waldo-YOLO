@@ -215,5 +215,18 @@ STRINGS: dict[str, str] = {
     "model.series.val_cls":     "Valid. — Cls",
     "model.series.val_dfl":     "Valid. — DFL",
     "model.error":              "Erro ao carregar os dados de treinamento: {e}",
+    # ── Model guide card
+    "model.guide.title":            "Guia das Métricas",
+    "model.guide.eval.heading":     "Métricas de Avaliação",
+    "model.guide.loss.heading":     "Curvas de Loss",
+    "model.guide.map50.desc":       "Precisão média com limiar de sobreposição (IoU) ≥ 50%. Mede se o modelo localiza o Waldo no lugar certo — um bounding box conta como correto se cobrir pelo menos metade da área real.",
+    "model.guide.map5095.desc":     "Média do mAP sobre limiares de IoU de 0,50 a 0,95. Critério mais rigoroso: exige que o bounding box predito seja bem preciso, não apenas próximo.",
+    "model.guide.precision.desc":   "Dos bounding boxes preditos, qual fração de fato contém o Waldo. Alta precisão significa poucos falsos positivos.",
+    "model.guide.recall.desc":      "Dos Waldos presentes nas imagens, qual fração foi detectada. Alto recall significa poucas detecções perdidas.",
+    "model.guide.box.desc":         "Erro na predição das coordenadas do bounding box (posição central e dimensões). Cai à medida que o modelo aprende a enquadrar o Waldo com mais precisão.",
+    "model.guide.cls.desc":         "Erro de classificação — quão confiante o modelo está em identificar a classe correta (Waldo vs. fundo). Tende a cair rapidamente nas primeiras épocas.",
+    "model.guide.dfl.desc":         "Distribution Focal Loss — mede a precisão dos limites do bounding box. Específico da arquitetura anchor-free do YOLOv8.",
+    "model.guide.trainval.name":    "Treino vs. Validação",
+    "model.guide.trainval.desc":    "Linhas sólidas = conjunto de treino; tracejadas = validação. As duas devem cair juntas e convergir. Uma diferença crescente indica overfitting.",
 }
 

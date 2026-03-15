@@ -106,6 +106,99 @@ def layout(lang: str = "pt") -> html.Div:
         **_LAYOUT_COMMON,
     )
 
+    def _guide_row(name: str, desc: str, color: str) -> html.Div:
+        return html.Div(
+            [
+                html.Div(
+                    name,
+                    style={
+                        "color": color,
+                        "fontSize": "13px",
+                        "fontWeight": "700",
+                        "whiteSpace": "nowrap",
+                        "minWidth": "110px",
+                        "paddingTop": "1px",
+                    },
+                ),
+                html.Div(
+                    desc,
+                    style={
+                        "color": _T["text_muted"],
+                        "fontSize": "13px",
+                        "lineHeight": "1.5",
+                    },
+                ),
+            ],
+            style={
+                "display": "flex",
+                "gap": "12px",
+                "alignItems": "flex-start",
+                "marginBottom": "10px",
+            },
+        )
+
+    def _guide_section(heading: str, rows: list) -> html.Div:
+        return html.Div(
+            [
+                html.Div(
+                    heading,
+                    style={
+                        "color": _T["text"],
+                        "fontSize": "12px",
+                        "fontWeight": "700",
+                        "textTransform": "uppercase",
+                        "letterSpacing": "1px",
+                        "marginBottom": "12px",
+                    },
+                ),
+                *rows,
+            ],
+            style={"flex": "1", "minWidth": "0"},
+        )
+
+    eval_section = _guide_section(
+        t(s, "model.guide.eval.heading"),
+        [
+            _guide_row(t(s, "model.series.map50"),     t(s, "model.guide.map50.desc"),     _T["primary"]),
+            _guide_row(t(s, "model.series.map5095"),   t(s, "model.guide.map5095.desc"),   _T["success"]),
+            _guide_row(t(s, "model.series.precision"), t(s, "model.guide.precision.desc"), _T["warning"]),
+            _guide_row(t(s, "model.series.recall"),    t(s, "model.guide.recall.desc"),    _T["danger"]),
+        ],
+    )
+
+    loss_section = _guide_section(
+        t(s, "model.guide.loss.heading"),
+        [
+            _guide_row("Box Loss",  t(s, "model.guide.box.desc"),     _T["primary"]),
+            _guide_row("Cls Loss",  t(s, "model.guide.cls.desc"),     _T["warning"]),
+            _guide_row("DFL Loss",  t(s, "model.guide.dfl.desc"),     _T["success"]),
+            _guide_row(t(s, "model.guide.trainval.name"), t(s, "model.guide.trainval.desc"), _T["text_muted"]),
+        ],
+    )
+
+    guide_card = _card(
+        html.Div(
+            [
+                html.Div(
+                    t(s, "model.guide.title"),
+                    style={
+                        "color": _T["text"],
+                        "fontSize": "14px",
+                        "fontWeight": "700",
+                        "marginBottom": "20px",
+                        "textTransform": "uppercase",
+                        "letterSpacing": "1px",
+                    },
+                ),
+                html.Div(
+                    [eval_section, loss_section],
+                    style={"display": "flex", "gap": "40px", "flexWrap": "wrap"},
+                ),
+            ]
+        ),
+        extra_style={"marginTop": "16px"},
+    )
+
     return html.Div(
         [
             # ── Description card ──────────────────────────────────────────
@@ -146,6 +239,9 @@ def layout(lang: str = "pt") -> html.Div:
                 ),
                 extra_style={"padding": "12px"},
             ),
+
+            # ── Metrics guide ─────────────────────────────────────────────
+            guide_card,
         ],
         style={"maxWidth": "1100px", "margin": "0 auto", "padding": "24px"},
     )
