@@ -42,7 +42,7 @@ def layout(lang: str = "pt") -> html.Div:
         df = pd.read_csv(RESULTS_CSV_PATH)
         df.columns = df.columns.str.strip()
     except Exception as e:
-        return html.Div(f"Erro ao carregar os dados de treinamento: {e}")
+        return html.Div(t(s, "model.error", e=e))
 
     # Rename for convenience
     df = df.rename(columns={
@@ -63,16 +63,16 @@ def layout(lang: str = "pt") -> html.Div:
     # ── Metrics figure ──────────────────────────────────────────────────────
     metrics_fig = go.Figure()
     _metric_series = [
-        ("mAP50",    _T["primary"],  "solid"),
-        ("mAP50-95", _T["success"],  "solid"),
-        ("Precision", _T["warning"], "dot"),
-        ("Recall",   _T["danger"],   "dot"),
+        ("mAP50",    t(s, "model.series.map50"),     _T["primary"],  "solid"),
+        ("mAP50-95", t(s, "model.series.map5095"),   _T["success"],  "solid"),
+        ("Precision", t(s, "model.series.precision"), _T["warning"], "dot"),
+        ("Recall",   t(s, "model.series.recall"),    _T["danger"],   "dot"),
     ]
-    for col, color, dash in _metric_series:
+    for col, label, color, dash in _metric_series:
         metrics_fig.add_trace(go.Scatter(
             x=epoch, y=df[col],
             mode="lines",
-            name=col,
+            name=label,
             line=dict(width=2, color=color, dash=dash),
         ))
     metrics_fig.update_layout(
@@ -85,12 +85,12 @@ def layout(lang: str = "pt") -> html.Div:
     # ── Loss figure ─────────────────────────────────────────────────────────
     loss_fig = go.Figure()
     _loss_series = [
-        ("train_box", "Train Box", _T["primary"],  "solid"),
-        ("train_cls", "Train Cls", _T["warning"],  "solid"),
-        ("train_dfl", "Train DFL", _T["success"],  "solid"),
-        ("val_box",   "Val Box",   _T["primary"],  "dash"),
-        ("val_cls",   "Val Cls",   _T["warning"],  "dash"),
-        ("val_dfl",   "Val DFL",   _T["success"],  "dash"),
+        ("train_box", t(s, "model.series.train_box"), _T["primary"],  "solid"),
+        ("train_cls", t(s, "model.series.train_cls"), _T["warning"],  "solid"),
+        ("train_dfl", t(s, "model.series.train_dfl"), _T["success"],  "solid"),
+        ("val_box",   t(s, "model.series.val_box"),   _T["primary"],  "dash"),
+        ("val_cls",   t(s, "model.series.val_cls"),   _T["warning"],  "dash"),
+        ("val_dfl",   t(s, "model.series.val_dfl"),   _T["success"],  "dash"),
     ]
     for col, label, color, dash in _loss_series:
         loss_fig.add_trace(go.Scatter(

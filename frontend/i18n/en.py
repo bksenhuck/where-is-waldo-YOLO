@@ -201,5 +201,16 @@ STRINGS: dict[str, str] = {
     "model.epoch":          "Epoch",
     "model.metrics":        "Score",
     "model.loss":           "Loss",
+    "model.series.map50":       "mAP50",
+    "model.series.map5095":     "mAP50-95",
+    "model.series.precision":   "Precision",
+    "model.series.recall":      "Recall",
+    "model.series.train_box":   "Train — Box",
+    "model.series.train_cls":   "Train — Cls",
+    "model.series.train_dfl":   "Train — DFL",
+    "model.series.val_box":     "Val. — Box",
+    "model.series.val_cls":     "Val. — Cls",
+    "model.series.val_dfl":     "Val. — DFL",
+    "model.error":              "Error loading training data: {e}",
 }
 
