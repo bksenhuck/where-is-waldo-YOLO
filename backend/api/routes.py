@@ -4,12 +4,22 @@ from __future__ import annotations
 
 import base64
 import io
-from typing import List, Optional
+from typing import List
 
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from pydantic import BaseModel, Field
+
+from backend.security import (
+    RATE_LIMIT_DETECT,
+    RATE_LIMIT_SCENE,
+    limiter,
+    require_api_key,
+)
 
 router = APIRouter()
+
+# Max base64 payload: ~2.7 MB encoded ≈ 2 MB decoded
+_MAX_B64_LEN = 3_000_000
 
 
 # ── Request / Response models ─────────────────────────────────────────────────
@@ -23,7 +33,7 @@ class SceneResponse(BaseModel):
 
 
 class DetectRequest(BaseModel):
-    img_b64: str
+    img_b64: str = Field(..., max_length=_MAX_B64_LEN)
 
 
 class Detection(BaseModel):
@@ -35,10 +45,18 @@ class DetectResponse(BaseModel):
     detections: List[Detection]
 
 
-# ── Endpoints ─────────────────────────────────────────────────────────────────
+# ── Endpoints ────────────────────────────────────────────────────────────────
 
-@router.get("/scene", response_model=SceneResponse)
-def get_scene(difficulty: str = "medium") -> SceneResponse:
+@router.get(
+    "/scene",
+    response_model=SceneResponse,
+    dependencies=[Depends(require_api_key)],
+)
+@limiter.limit(RATE_LIMIT_SCENE)
+def get_scene(
+    request: Request,
+    difficulty: str = Query("medium", max_length=10),  # noqa: B008
+) -> SceneResponse:
     """Generate a Waldo scene and return the image + ground-truth bbox."""
     if difficulty not in ("easy", "medium", "hard"):
         raise HTTPException(
@@ -64,19 +82,25 @@ def get_scene(difficulty: str = "medium") -> SceneResponse:
     )
 
 
-@router.post("/detect", response_model=DetectResponse)
-def detect(request: DetectRequest) -> DetectResponse:
+@router.post(
+    "/detect",
+    response_model=DetectResponse,
+    dependencies=[Depends(require_api_key)],
+)
+@limiter.limit(RATE_LIMIT_DETECT)
+def detect(
+    request: Request,
+    body: DetectRequest,
+) -> DetectResponse:
     """Run YOLO inference on a base64-encoded image and return detections."""
     from PIL import Image
     from ml.models.yolo_detector import detect_waldo  # lazy
 
     try:
-        data = base64.b64decode(request.img_b64)
+        data = base64.b64decode(body.img_b64)
         img = Image.open(io.BytesIO(data)).convert("RGB")
-    except Exception as exc:
-        raise HTTPException(
-            status_code=422, detail=f"Invalid image data: {exc}"
-        ) from exc
+    except Exception:
+        raise HTTPException(status_code=422, detail="Invalid image data.")
 
     raw = detect_waldo(img)
 

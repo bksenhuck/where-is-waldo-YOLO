@@ -14,7 +14,7 @@ from dash import Input, Output, State, html, no_update
 from PIL import Image
 
 from backend.utils.bbox_utils import point_in_bbox
-from config.settings import API_BASE
+from config.settings import API_BASE, INTERNAL_API_KEY
 
 # ── Palette — single source of truth lives in layout.py ──────────────────────
 from frontend.dash_app.layout import THEME as _T
@@ -329,7 +329,11 @@ def _build_result_panel(result: Dict[str, Any], lang: str = "pt") -> html.Div:
     yolo_found: bool = result["yolo_found"]
     yolo_conf: Optional[float] = result.get("yolo_conf")
 
-    user_msg = t(s, "result.you.found") if user_found else t(s, "result.you.missed")
+    user_msg = (
+        t(s, "result.you.found")
+        if user_found
+        else t(s, "result.you.missed")
+    )
     user_color = _SUCCESS if user_found else _DANGER
 
     if yolo_found and yolo_conf is not None:
@@ -525,6 +529,7 @@ def register_callbacks(app) -> None:
         resp = requests.get(
             f"{API_BASE}/api/scene",
             params={"difficulty": difficulty},
+            headers={"X-Api-Key": INTERNAL_API_KEY},
             timeout=60,
         )
         resp.raise_for_status()
@@ -669,7 +674,11 @@ def register_callbacks(app) -> None:
         )
         difficulty = scene_data.get("difficulty", "medium")
 
-        diff_key = {"easy": "game.diff.easy", "medium": "game.diff.medium", "hard": "game.diff.hard"}
+        diff_key = {
+            "easy": "game.diff.easy",
+            "medium": "game.diff.medium",
+            "hard": "game.diff.hard",
+        }
         diff_label = t(s, diff_key.get(difficulty, "game.diff.medium"))
 
         # ── Result phase (after submission) ───────────────────────────
