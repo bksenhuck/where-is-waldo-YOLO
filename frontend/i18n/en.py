@@ -94,6 +94,7 @@ STRINGS: dict[str, str] = {
     "result.col.you":       "You",
     "result.col.yolo":      "AI (YOLO)",
     "result.col.result":    "Result",
+    "comp.result.placeholder": "Round Result",
     "result.you.found":     "Found Waldo!",
     "result.you.missed":    "Missed Waldo",
     "result.yolo.found":    "Found it! ({conf} conf.)",

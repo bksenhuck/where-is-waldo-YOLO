@@ -96,6 +96,7 @@ STRINGS: dict[str, str] = {
     "result.col.you":       "Você",
     "result.col.yolo":      "IA (YOLO)",
     "result.col.result":    "Resultado",
+    "comp.result.placeholder": "Resultado da Rodada",
     "result.you.found":     "Encontrou o Waldo!",
     "result.you.missed":    "Errou o Waldo",
     "result.yolo.found":    "Encontrou! ({conf} conf.)",

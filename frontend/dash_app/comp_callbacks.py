@@ -415,9 +415,21 @@ def _build_result_panel_vertical(result: Dict, lang: str = "pt") -> html.Div:
     )
 
 
-def _result_panel_empty() -> html.Div:
-    """Placeholder shown in the right panel while waiting for a result."""
+def _result_panel_empty(lang: str = "pt") -> html.Div:
+    """Placeholder card shown while waiting for the round result."""
+    s = get_strings(lang)
     return html.Div(
+        html.Div(
+            t(s, "comp.result.placeholder"),
+            style={
+                "color": _TEXT_MUTED,
+                "fontSize": "11px",
+                "fontWeight": "700",
+                "textTransform": "uppercase",
+                "letterSpacing": "1px",
+                "textAlign": "center",
+            },
+        ),
         style={
             "backgroundColor": _SURFACE,
             "border": f"1px solid {_BORDER}",
@@ -425,6 +437,9 @@ def _result_panel_empty() -> html.Div:
             "width": "100%",
             "height": "100%",
             "boxSizing": "border-box",
+            "display": "flex",
+            "alignItems": "center",
+            "justifyContent": "center",
         },
     )
 
@@ -705,7 +720,7 @@ def register_comp_callbacks(app) -> None:
                 _placeholder_style,
                 _hide,
                 go.Figure(),
-                _result_panel_empty(),
+                _result_panel_empty(lang),
                 _hide,
                 [],
                 True,
@@ -759,7 +774,7 @@ def register_comp_callbacks(app) -> None:
                 _hide,
                 _show,
                 fig,
-                _result_panel_empty(),
+                _result_panel_empty(lang),
                 _hide,
                 [],
                 False,          # submit: enabled
@@ -779,7 +794,7 @@ def register_comp_callbacks(app) -> None:
             _hide,
             _show,
             fig,
-            _result_panel_empty(),
+            _result_panel_empty(lang),
             _hide,
             [],
             True,           # submit: disabled until click

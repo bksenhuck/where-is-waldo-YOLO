@@ -133,12 +133,12 @@ def layout(lang: str = "pt") -> html.Div:
                                         style={"display": "none"},
                                     ),
                                 ],
-                                style={"flex": "8", "minWidth": "0"},
+                                style={"flex": "2", "minWidth": "0"},
                             ),
-                            # 20 % — vertical result panel
+                            # ~33 % — vertical result panel (same width as action card above)
                             html.Div(
                                 html.Div(id="comp-result-panel", style={"height": "100%"}),
-                                style={"flex": "2", "minWidth": "0", "display": "flex"},
+                                style={"flex": "1", "minWidth": "0", "display": "flex"},
                             ),
                         ],
                         id="comp-graph-wrapper",
